@@ -1,0 +1,17 @@
+<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd" xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="LibStub/LibStub.lua" />
+	<Script file="LibWoWUnit.lua" />
+	<Script file="base.lua" />
+	<Script file="matcher.lua" />
+	<Script file="ui.lua" />
+
+	<Script file="lib.tests.lua" />
+
+	<Script>
+		local r = math.random(1, 8) / 8;
+		local b = math.random(1, 8) / 8;
+		local g = math.random(1, 8) / 8;
+
+		--self:SetBackdropColor(r,g,b);
+	</Script>
+</Ui>
