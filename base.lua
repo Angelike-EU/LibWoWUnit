@@ -10,10 +10,11 @@ local lib = LibStub:GetLibrary("LibWoWUnit", 1);
 
 -- get all global methodes in local user space
 
-local _G, _L = _G, {};
+local _G, _L = _G, lib.base or {};
 local debugstack, print, select, type, xpcall = _G.debugstack, _G.print, _G.select, _G.type, _G.xpcall;
-local strsplit = _G.strsplit
-local ipairs, pairs, tconcat, tinsert, tsort = _G.ipairs, _G.pairs, _G.table.concat, _G.table.insert, _G.table.sort;
+local strsplit, tostring = _G.strsplit, tostring;
+local CopyTable, ipairs, pairs, tconcat, tinsert, tsort = CopyTable, _G.ipairs, _G.pairs, _G.table.concat, _G.table.insert, _G.table.sort;
+local getmetatable, setmetatable = getmetatable, setmetatable;
 
 lib.base = _L;
 
@@ -23,7 +24,6 @@ setfenv(1, _L);
 -- define module vars
 outerDescribe = nil;
 file = debugstack(1, 1, 1):match('[Ii]nterface[^\'"]+');
-
 
 --[[
  Helper function to catch all errors thrown outside test scope
@@ -41,7 +41,7 @@ function catchOutsideError(e)
 end
 
 --[[
- Helper function to catch all errors thrown outside test scope
+ Helper function to catch all errors thrown inside tests
 
  -- argumnts:
    error:string - error info
@@ -55,7 +55,7 @@ function catchRuntimeError(msg)
 
     test.errors = test.errors or {};
 
-	table.insert(test.errors, {msg, debugstack(2)});
+	tinsert(test.errors, {msg, debugstack(2)});
 end
 
 --[[
@@ -79,6 +79,20 @@ function getSuiteName(name)
     end
 
     return 'Global';
+end
+
+local function normalizeBlockParams(...)
+    if (select('#', ...) == 3) then
+        return ...;
+    end
+
+    if (select('#', ...) == 2) then
+        return nil, ...;
+    end
+
+    if (select('#', ...) == 1) then
+        return nil, '', ...;
+    end
 end
 
 --[[
@@ -109,21 +123,16 @@ end
     nil
 --]]
 function describe(state, ...)
-    local suite, name, callbackFn;
+	local suite, name, callbackFn = normalizeBlockParams(...);
 
-    if (select('#', ...) == 3) then
-        suite, name, callbackFn = ...;
-    else
-        if (select('#', ...) == 2) then
-            name, callbackFn = ...;
-        else
-            if (select('#', ...) == 1) then
-                callbackFn = 'anonymous describe', ...;
-            end
-        end
+    if (type(callbackFn) ~= 'function') then
+        catchOutsideError('describe must have at least one callback function!');
+        
+        return;
     end
     
 	local current = createDescribe(name);
+    local numTestsBefore = #lib.tests2run;
     
     if (outerDescribe == nil) then
         current.suite = getSuiteName(suite);
@@ -142,6 +151,10 @@ function describe(state, ...)
 	outerDescribe = current;
 	
 	xpcall(callbackFn, catchOutsideError);
+
+    if (numTestsBefore == #lib.tests2run) then
+        catchOutsideError('describe must contain at least one test!');
+    end
 	
 	outerDescribe = current.parent;
 end
@@ -174,18 +187,13 @@ end
     nil
 --]]
 function it(state, ...)
-	local suite, name, callbackFn, test, parent;
+    local test, parent;
+	local suite, name, callbackFn = normalizeBlockParams(...);
 
-    if (select('#', ...) == 3) then
-        suite, name, callbackFn = ...;
-    else
-        if (select('#', ...) == 2) then
-            name, callbackFn = ...;
-        else
-            if (select('#', ...) == 1) then
-                callbackFn = 'anonymous it', ...;
-            end
-        end
+    if (type(callbackFn) ~= 'function') then
+        catchOutsideError('it must have at least one callback function!');
+        
+        return;
     end
 
     test = createIt(name);
@@ -200,6 +208,8 @@ function it(state, ...)
             test.state = 'Forced';
         end
     end
+
+    suite = parent and parent.suite or suite;
 
 	while (parent) do
 		tinsert(test.names, 1, parent.name);
@@ -228,11 +238,16 @@ function it(state, ...)
     suite = getSuiteName(suite);
     tinsert(test.names, 1, suite);
 
+    test.suite = suite;
+
     if (lib.suites[suite] == nil) then
         lib.suites[suite] = {};
     end
 
+    test.index = #lib.suites[suite] + 1;
+
 	tinsert(lib.suites[suite], test);
+	tinsert(lib.tests2run, test);
 end
 
 --[[
@@ -296,82 +311,149 @@ function hasForcedTests(suite)
 	return false;
 end
 
---[[
- run all tests in all test suites
+--[[---------------------------------------------------------------------------
+ - runs a single test and save it's result in the result table
 
  -- argumnts:
+   test:table - suite name to test in
 
  -- returns:
     nil
---]]
-function runTests()
-    for suite in pairs(lib.suites) do
-        runTestSuite(suite);
+-----------------------------------------------------------------------------]]
+function runTest(test)
+    local runningTest = {
+        ['expects'] = 0,
+        ['index'] = test.index,
+        ['result'] = 'Risky',
+        ['suite'] = test.suite,
+    };
+
+    tinsert(lib.results, runningTest);
+
+    if (test.state == 'Skipped') then
+        runningTest.result = 'Skipped';
+
+        return;
     end
 
-    tsort(lib.results, function(a, b)
-        local namesA = lib.suites[a.suite][a.index].names;
-        local namesB = lib.suites[b.suite][b.index].names;
+    if (forcesTests and test.state ~= 'Forced') then
+        runningTest.result = 'Skipped-Implicit';
 
-        return tconcat(namesA, ' -> ') < tconcat(namesB, ' -> ');
-    end)
+        return;
+    end
 
+    if (test.before) then
+        for _, beforeFn in ipairs(test.before) do
+            xpcall(beforeFn, catchRuntimeError);
+        end
+    end
+
+    xpcall(test.callbackFn, catchRuntimeError);
+
+    if (test.after) then
+        for _, afterFn in ipairs(test.after) do
+            xpcall(afterFn, catchRuntimeError);
+        end
+    end
+
+    if (runningTest.errors) then
+        runningTest.result = 'Error';
+
+        return
+    end
+
+    if (runningTest.failures) then
+        runningTest.result = 'Failed';
+
+        return;
+    end
+
+    if (runningTest.expects > 0) then
+        runningTest.result = 'Success';
+    end
 end
 
 --[[
- run all tests in a specific test suite
+ Helper function to register custom mather to the lib
 
- -- argumnts:
-   suite:string - suite name to test in
+ -- arguments:
+   name:string - name of the matcher
+   callbackFn:function - the code of the matcher function
 
  -- returns:
-    nil
+    name:string - the name of the actual test suite
 --]]
-function runTestSuite(suite)
-	local forcesTests = hasForcedTests(suite);
+function lib:registerMatcher(name, fn)
+	lib.matcher[name] = fn;
+end
 
-	for index, test in ipairs(lib.suites[suite]) do
-		local runningTest = {
-            ['expects'] = 0,
-            ['index'] = index,
-            ['result'] = 'Risky',
-            ['suite'] = suite,
-        };
+--[[
+metatable to handle expect calls
+--]]
+local expectMetatable = {
+    --[[
+    meta method ist executed when the table is called
 
-	    tinsert(lib.results, runningTest);
-		
-        if (test.state == 'Skipped') then
-            runningTest.result = 'Skipped';
-        else
-            if (forcesTests and test.state ~= 'Forced') then
-                runningTest.result = 'Skipped-Implicit';
-            else
-                if (forcesTests and test.state == 'Forced') then
-                    if (test.before) then
-                        for _, beforeFn in ipairs(test.before) do
-                            xpcall(beforeFn, catchRuntimeError);
-                        end
-                    end
+    -- arguments
+    t:table - the table the method was called in
+    ...:mixed - the argumets the method was called with, to be passed thoug the matcher method
 
-                    xpcall(test.callbackFn, catchRuntimeError);
+    -- returns:
+    nil
+    --]]
+    __call = function(t, ...)
+        local mt = getmetatable(t)
+        local input = mt.input;
+        local operator = mt.operator;
+        local expectedResult = operator:match('^not') ~= 'not';
+        local errors = mt.result.errors or {};
 
-                    if (test.after) then
-                        for _, afterFn in ipairs(test.after) do
-                            xpcall(afterFn, catchRuntimeError);
-                        end
-                    end
-                end
-            end
-		end
-		
-		if (runningTest.errors) then
-            runningTest.result = 'Error';
-        else
-            if (runningTest.failures) then
-                runningTest.result = 'Failed';
-            end
+        if (expectedResult == false) then
+            -- delete leading not, correct first char case;
+            operator = operator:sub(4, 4):lower() .. operator:sub(5) ;
         end
-	end
+
+        mt.result.expects = mt.result.expects + 1;
+
+        if (lib.matcher[operator] == nil) then
+            tinsert(errors, 'call an unknown matcher function: ' .. operator);
+            mt.result.errors = errors;
+            
+            return t;
+        end
+
+        local result, msg = lib.matcher[operator](input, ...);
+
+        if (result == expectedResult) then
+            return t;
+        end
+
+        tinsert(errors, 'operator ' .. operator .. ' failed.\n' .. tostring(msg))
+        mt.result.errors = errors;
+
+        return t;
+    end,
+    __index = function(t, name)
+        local mt = getmetatable(t)
+
+        mt.operator = name;
+
+        return setmetatable(t, mt);
+    end,
+    operator = nil,
+}
+
+	
+function expect(input)
+    if (lib.runningTest == nil) then
+        catchOutsideError('expect can only called inside a it block!');
+    end
+
+    local mt = CopyTable(expectMetatable);
+    mt.result = lib.runningResult or {expects = 0};
+    mt.input = input;
+
+	return setmetatable({}, mt);
 end
 
 _G['it'] = function(...) it('Normal', ...); end;
@@ -382,3 +464,4 @@ _G['fdescribe'] = function(...) describe('Forced', ...) end;
 _G['xdescribe'] = function(...) describe('Skipped', ...) end;
 _G['beforeEach'] = function(...) beforeEach(...) end;
 _G['afterEach'] = function(...) afterEach(...) end;
+_G['expect'] = function(...) return expect(...) end;

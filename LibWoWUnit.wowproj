@@ -14,11 +14,18 @@
     <Content Include="base.lua">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="doc\expect.md">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="example\describe.lua">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="lib.tests.lua">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="LibWoWUnit.lua">
+    <Content Include="lib.lua">
       <SubType>Code</SubType>
+      <DependentUpon>lib.xml</DependentUpon>
     </Content>
     <Content Include="LibWoWUnit.toc">
       <SubType>TableOfContents</SubType>
@@ -32,6 +39,10 @@
     <Content Include="ui.lua">
       <SubType>Code</SubType>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="example" />
+    <Folder Include="doc" />
   </ItemGroup>
   <Import Project="$(DevEnvDir)\Extensions\Tools\MSBuild\AddonStudio\Wow\3.0\WowAddonStudio.targets" />
   <!--

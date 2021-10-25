@@ -3,7 +3,7 @@
 ## Title: Lib: WoW Unit
 ## Notes: A Library to run Test
 ## OptionalDependencies: LibStub
-## SavedVariables: LibWoWUnitDB
+## SavedVariables: LibWoWUnitDB, LibWoWUnitLib
 
 lib.xml
 

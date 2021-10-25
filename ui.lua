@@ -5,7 +5,6 @@ result window
 All methodes are registred in the subtable ui in the main lib
 
 --]]
-
 local lib = LibStub:GetLibrary("LibWoWUnit", 1);
 
 -- get all global methodes in local user space
@@ -14,13 +13,17 @@ local _G = _G;
 local setfenv, setmetatable, type = _G.setfenv, setmetatable, _G.type;
 local CreateFrame = _G.CreateFrame;
 local ipairs, pairs = _G.ipairs, _G.pairs;
-local tinsert, wipe = tinsert, wipe;
+local select, tconcat, tinsert, tremove, tsort,  wipe = select, table.concat, tinsert, tremove, table.sort, wipe;
 local print = print;
+local math, fastrandom = math, fastrandom;
 
 lib.ui = {};
 
 -- restrict global environment, so we can't accidentally pollute it
 setfenv(1, lib.ui);
+
+-- frame refs
+local anchorFrame, mainFrame, titleFrame, closeButton, minimizeButton, resizeButton, scrollFrame, resultFrame;
 
 --[[
  creates a result frame to display all results
@@ -31,19 +34,23 @@ setfenv(1, lib.ui);
     nil
 --]]
 function createFrames()
-    mainFrame = CreateFrame('Frame', lib.anchorFrame:GetName() .. '-Main', lib.anchorFrame);
-    titleFrame = CreateFrame('Frame', mainFrame:GetName() .. '-Title', mainFrame); 
-    closeButton = CreateFrame('Button', titleFrame:GetName() .. '-Close', titleFrame);
-    minimizeButton = CreateFrame('Button', titleFrame:GetName() .. '-Minimize', titleFrame);
-    scrollFrame = CreateFrame('ScrollFrame', mainFrame:GetName() .. '-Scroll', mainFrame);
-    resultFrame = CreateFrame('Frame', scrollFrame:GetName() .. '-Result', scrollFrame);
+    anchorFrame = lib.anchorFrame;
+    mainFrame = CreateFrame('Frame', nil, anchorFrame, 'LibWoWUnitMainFrame');
+    titleFrame = CreateFrame('Frame', nil, mainFrame, 'LibWoWUnitTitleFrame'); 
+    closeButton = CreateFrame('Button', nil, titleFrame, 'LibWoWUnitCloseButton');
+    minimizeButton = CreateFrame('Button', nil, titleFrame, 'LibWoWUnitMinimizeButton');
+    resizeButton = CreateFrame('Button', nil, mainFrame, 'LibWoWUnitResizeButton');
+    scrollFrame = CreateFrame('ScrollFrame', nil, mainFrame, 'LibWoWUnitScrollFrame');
+    resultFrame = CreateFrame('Frame', nil, scrollFrame, 'LibWoWUnitResultFrame');
 
-    loadScripts(mainFrame, lib.mixins.MainFrame);
-    loadScripts(closeButton, lib.mixins.CloseButton);
-    loadScripts(minimizeButton, lib.mixins.MinimizeButton);
-    loadScripts(titleFrame, lib.mixins.TitleFrame);
-    loadScripts(scrollFrame, lib.mixins.ScrollFrame);
-    loadScripts(resultFrame, lib.mixins.ResultFrame);
+    loadScripts(anchorFrame, AnchorFrame);
+    loadScripts(mainFrame, MainFrame);
+    loadScripts(closeButton, CloseButton);
+    loadScripts(minimizeButton, MinimizeButton);
+    loadScripts(resizeButton, ResizeButton);
+    loadScripts(titleFrame, TitleFrame);
+    loadScripts(scrollFrame, ScrollFrame);
+    loadScripts(resultFrame, ResultFrame);
 end
 
 --[[---------------------------------------------------------------------------
@@ -63,14 +70,14 @@ function loadScripts(target, scripts)
     
     for name, data in pairs(scripts) do
         if (type(data) == 'function' and name:match('^On')) then
-            target:SetScript(name, function(...) data(target, ...) end);
+            target:SetScript(name, function(...) data(...); end);
         else 
             target[name] = data;        
         end
     end
 
     if (type(scripts.OnLoad) == 'function') then
-        scripts:OnLoad(target);
+        scripts.OnLoad(target);
     end
 end
 
@@ -79,7 +86,7 @@ local shortTestIndicators = {
     ['Failed'] = 'F',
     ['Skipped'] = 'S',
     ['Skipped-Implicit'] = 's',
-    ['Risky'] = 'R',
+    ['Risky'] = '|cffff0000R|r',
     ['Success'] = '.',
 }
 
@@ -98,35 +105,87 @@ end
 
 
 --[[---------------------------------------------------------------------------
-   _____   .__         .__                 
-  /     \  |__|___  ___|__|  ____    ______
- /  \ /  \ |  |\  \/  /|  | /    \  /  ___/
-/    Y    \|  | >    < |  ||   |  \ \___ \ 
-\____|__  /|__|/__/\_ \|__||___|  //____  >
-        \/           \/         \/      \/ 
+___  ____      _           
+|  \/  (_)    (_)          
+| .  . |___  ___ _ __  ___ 
+| |\/| | \ \/ / | '_ \/ __|
+| |  | | |>  <| | | | \__ \
+\_|  |_/_/_/\_\_|_| |_|___/
 -----------------------------------------------------------------------------]]
 
-lib.mixins = {}
+--[[
+  ___             _               ______                        
+ / _ \           | |              |  ___|                       
+/ /_\ \_ __   ___| |__   ___  _ __| |_ _ __ __ _ _ __ ___   ___ 
+|  _  | '_ \ / __| '_ \ / _ \| '__|  _| '__/ _` | '_ ` _ \ / _ \
+| | | | | | | (__| | | | (_) | |  | | | | | (_| | | | | | |  __/
+\_| |_/_| |_|\___|_| |_|\___/|_|  \_| |_|  \__,_|_| |_| |_|\___|
+--]]
 
-local mt = {
-    ["__index"] = lib.ui
-};
+AnchorFrame = {};
 
-setmetatable(lib.mixins, mt)
-setfenv(1, lib.mixins);
+--[[---------------------------------------------------------------------------
+initializes the anchor frame
+------------------------------------------------------------------------------]]
+function AnchorFrame:OnLoad()
+    self:SetMovable(true);
+    self:SetWidth(1);
+    self:SetHeight(1);
+    self:ClearAllPoints();
+    self:SetPoint(lib.db.point, lib.db.x, lib.db.y);
+end
+
+function AnchorFrame:OnUpdate(elapsed)
+    if (#lib.tests2run == 0) then
+        return;
+    end
+
+    local tests2run = {};
+
+    while (#lib.tests2run > 0) do
+        local index = fastrandom(#lib.tests2run);
+        
+        tinsert(tests2run, tremove(lib.tests2run, index));
+    end
+
+    lib.tests2run = tests2run;
+    
+    lib.base.runTest(tremove(tests2run));
+
+    if (#tests2run == 0) then
+        tsort(lib.results, function(a, b)
+            local namesA = lib.suites[a.suite][a.index].names;
+            local namesB = lib.suites[b.suite][b.index].names;
+
+            return tconcat(namesA, ' -> ') < tconcat(namesB, ' -> ');
+        end)
+    end
+
+    resultFrame.updated = false;
+end
+
+function AnchorFrame:savePosition()
+    lib.db.point, lib.db.x, lib.db.y = select(3, self:GetPoint(1));
+end
+
+--[[
+___  ___      _      ______                        
+|  \/  |     (_)     |  ___|                       
+| .  . | __ _ _ _ __ | |_ _ __ __ _ _ __ ___   ___ 
+| |\/| |/ _` | | '_ \|  _| '__/ _` | '_ ` _ \ / _ \
+| |  | | (_| | | | | | | | | | (_| | | | | | |  __/
+\_|  |_/\__,_|_|_| |_\_| |_|  \__,_|_| |_| |_|\___|
+--]]
 
 MainFrame = {};
 
-function MainFrame:OnLoad(self)
+function MainFrame:OnLoad()
     self:ClearAllPoints();
-    self:SetPoint('CENTER', 0, 0);
-    self:SetHeight(200);
-    self:SetWidth(400);
-    self:Show();
+    self:SetPoint('TOPLEFT');
 
+    self:SetResizable(true);
     self:EnableMouse(true);
-    self:SetMovable(true);
-    self:SetClampedToScreen(true);
+    self:SetShown(not lib.db.closed);
 
     self.background1 = self:CreateTexture();
     self.background1:ClearAllPoints();
@@ -142,23 +201,44 @@ function MainFrame:OnLoad(self)
     self.background3:ClearAllPoints();
     self.background3:SetAllPoints();
     self.background3:SetColorTexture(0.16, 0.19, 0.19);
+
+    self:updateFrame();
 end
 
-function MainFrame:OnUpdate(self, elapse)
-    if (self.updated ~= nil) then
-        return;
+function MainFrame:saveSize()
+    lib.db.width = self:GetWidth();
+    lib.db.height = self:GetHeight();
+end
+
+function MainFrame:updateFrame()
+    if (lib.db.minimized) then
+        resizeButton:Hide();
+        scrollFrame:Hide();
+        self:SetHeight(24);
+        self:SetWidth(150);
+    else
+        resizeButton:Show();
+        scrollFrame:Show();
+        self:SetHeight(lib.db.width);
+        self:SetWidth(lib.db.height);
+        resultFrame:SetWidth(scrollFrame:GetWidth() - 20);
+
+        resultFrame.updated = false;
     end
-
-    self.updated = true;
-
-    lib.base:runTests();
-    lib.ui.resultFrame.update = true;
 end
 
+--[[
+ _____ _ _   _     ______       _   _              
+|_   _(_) | | |    | ___ \     | | | |             
+  | |  _| |_| | ___| |_/ /_   _| |_| |_ ___  _ __  
+  | | | | __| |/ _ \ ___ \ | | | __| __/ _ \| '_ \ 
+  | | | | |_| |  __/ |_/ / |_| | |_| || (_) | | | |
+  \_/ |_|\__|_|\___\____/ \__,_|\__|\__\___/|_| |_|
+--]]
 
 TitleFrame = {};
 
-function TitleFrame:OnLoad(self)
+function TitleFrame:OnLoad()
     self:ClearAllPoints();
     self:SetPoint('TOPLEFT', 0, 0)
     self:SetPoint('TOPRIGHT', 0, 0)
@@ -174,19 +254,29 @@ function TitleFrame:OnLoad(self)
     self.text:SetPoint('LEFT', 4, 0);
 end
 
-function TitleFrame:OnDragStart(self)
-    self:GetParent():StartMoving();    
+function TitleFrame:OnDragStart()
+    anchorFrame:StartMoving();
 end
 
-function TitleFrame:OnDragStop(self)
-    self:GetParent():StopMovingOrSizing();    
+function TitleFrame:OnDragStop()
+    anchorFrame:StopMovingOrSizing();
+    anchorFrame:savePosition();
 end
+
+--[[
+ _____ _               ______       _   _              
+/  __ \ |              | ___ \     | | | |             
+| /  \/ | ___  ___  ___| |_/ /_   _| |_| |_ ___  _ __  
+| |   | |/ _ \/ __|/ _ \ ___ \ | | | __| __/ _ \| '_ \ 
+| \__/\ | (_) \__ \  __/ |_/ / |_| | |_| || (_) | | | |
+ \____/_|\___/|___/\___\____/ \__,_|\__|\__\___/|_| |_|
+--]]
 
 CloseButton = {};
 
-function CloseButton:OnLoad(self)
+function CloseButton:OnLoad()
     self:ClearAllPoints();
-    self:SetPoint('TOPRIGHT', -4, -4);
+    self:SetPoint('RIGHT', -4, 0);
     self:SetHeight(20);
     self:SetWidth(20);
 
@@ -202,27 +292,30 @@ function CloseButton:OnLoad(self)
     self.texture:SetColorTexture(0.5, 0, 0, 0.75);
 end
 
-function CloseButton:OnClick(self, button, ...)
-    lib.ui.mainFrame:Hide();
+function CloseButton:OnClick(button, ...)
+    mainFrame:Hide();
 end
+
+--[[
+___  ____       _           _        ______       _   _              
+|  \/  (_)     (_)         (_)       | ___ \     | | | |             
+| .  . |_ _ __  _ _ __ ___  _ _______| |_/ /_   _| |_| |_ ___  _ __  
+| |\/| | | '_ \| | '_ ` _ \| |_  / _ \ ___ \ | | | __| __/ _ \| '_ \ 
+| |  | | | | | | | | | | | | |/ /  __/ |_/ / |_| | |_| || (_) | | | |
+\_|  |_/_|_| |_|_|_| |_| |_|_/___\___\____/ \__,_|\__|\__\___/|_| |_|
+--]]
 
 MinimizeButton = {};
 
-function MinimizeButton:OnClick(self, button, ...)
-    self.minized = not self.minized;
+function MinimizeButton:OnClick(button, ...)
+    lib.db.minimized = not lib.db.minimized;
 
-    if (self.minized) then
-        lib.ui.scrollFrame:Hide();
-        lib.ui.mainFrame:SetHeight(lib.ui.titleFrame:GetHeight());
-    else
-        lib.ui.scrollFrame:Show();
-        lib.ui.mainFrame:SetHeight(lib.ui.titleFrame:GetHeight() + lib.ui.scrollFrame:GetHeight());
-    end
+    mainFrame:updateFrame();
 end
 
-function MinimizeButton:OnLoad(self)
+function MinimizeButton:OnLoad()
     self:ClearAllPoints();
-    self:SetPoint('TOPRIGHT', -28, -4);
+    self:SetPoint('RIGHT', -28, 0);
     self:SetHeight(20);
     self:SetWidth(20);
 
@@ -238,59 +331,151 @@ function MinimizeButton:OnLoad(self)
     self.texture:SetColorTexture(0, 0.5, 0, 0.75);
 end
 
+--[[
+______          _        ______       _   _              
+| ___ \        (_)       | ___ \     | | | |             
+| |_/ /___  ___ _ _______| |_/ /_   _| |_| |_ ___  _ __  
+|    // _ \/ __| |_  / _ \ ___ \ | | | __| __/ _ \| '_ \ 
+| |\ \  __/\__ \ |/ /  __/ |_/ / |_| | |_| || (_) | | | |
+\_| \_\___||___/_/___\___\____/ \__,_|\__|\__\___/|_| |_|
+--]]
+
+ResizeButton = {};
+
+function ResizeButton:OnLoad()
+    self:ClearAllPoints();
+    self:SetPoint('BOTTOMRIGHT');
+
+    self:SetWidth(12);
+    self:SetHeight(12);
+
+    self:SetNormalTexture('Interface/ChatFrame/UI-ChatIM-SizeGrabber-Up');
+    self:SetHighlightTexture('Interface/ChatFrame/UI-ChatIM-SizeGrabber-Highlight');
+    self:SetPushedTexture('Interface/ChatFrame/UI-ChatIM-SizeGrabber-Down');
+
+end
+
+function ResizeButton:OnMouseDown(button)
+    self.updateTime = 0.25;
+    self:SetButtonState('PUSHED', true);
+    self:GetHighlightTexture():Hide();
+    --SetCursor('UI-Cursor-Size');	--Hide the cursor
+    mainFrame:StartSizing('BOTTOMRIGHT');
+end
+
+function ResizeButton:OnMouseUp(button)
+    self:SetButtonState('NORMAL', false);
+    self:GetHighlightTexture():Show();
+    --SetCursor(nil); --Show the cursor again
+
+    mainFrame:StopMovingOrSizing();
+    -- reattach point, because frame:StartSizing deattach all points
+    mainFrame:ClearAllPoints();
+    mainFrame:SetPoint('TOPLEFT');
+
+    mainFrame:saveSize();
+end
+
+function ResizeButton:OnUpdate(elapsed)
+    if (self:GetButtonState() == 'NORMAL') then
+        return;
+    end
+
+    self.updateTime = self.updateTime - elapsed;
+
+    if (self.updateTime > 0) then
+        return;
+    end
+
+    self.updateTime = 0.25;
+
+    resultFrame:SetWidth(scrollFrame:GetWidth() - 20);
+    resultFrame.updated = false;
+end
+
+--[[
+ _____                _ _______                        
+/  ___|              | | |  ___|                       
+\ `--.  ___ _ __ ___ | | | |_ _ __ __ _ _ __ ___   ___ 
+ `--. \/ __| '__/ _ \| | |  _| '__/ _` | '_ ` _ \ / _ \
+/\__/ / (__| | | (_) | | | | | | | (_| | | | | | |  __/
+\____/ \___|_|  \___/|_|_\_| |_|  \__,_|_| |_| |_|\___|
+--]]
+
 ScrollFrame = {};
 
-function ScrollFrame:OnLoad(self)
+function ScrollFrame:OnLoad()
     self:ClearAllPoints();
     self:SetPoint('TOPLEFT', 4, -28);
     self:SetPoint('BOTTOMRIGHT', -4, 4);
 
-    self:SetScrollChild(lib.ui.resultFrame);
+    self:SetScrollChild(resultFrame);
+    self:EnableMouseWheel(true);
 end
 
+function ScrollFrame:OnMouseWheel(delta)
+    local height = self:GetHeight();
+    local offset, range = self:GetVerticalScroll(), self:GetVerticalScrollRange();
+    local step = height * 0.10 * delta; -- 10%
+    local newOffset = offset - step;
+    
+    if (newOffset < 0) then
+        return self:SetVerticalScroll(0);
+    end
+
+    if (newOffset > range) then
+        return self:SetVerticalScroll(range);
+    end
+
+    self:SetVerticalScroll(offset - step);
+end
+
+--[[
+______                _ _  ______                        
+| ___ \              | | | |  ___|                       
+| |_/ /___  ___ _   _| | |_| |_ _ __ __ _ _ __ ___   ___ 
+|    // _ \/ __| | | | | __|  _| '__/ _` | '_ ` _ \ / _ \
+| |\ \  __/\__ \ |_| | | |_| | | | | (_| | | | | | |  __/
+\_| \_\___||___/\__,_|_|\__\_| |_|  \__,_|_| |_| |_|\___|
+--]]
 
 ResultFrame = {};
 
-ResultFrame.lineCache = {
-    ['lines'] = {},
-    ['used'] = {}
-};
-
 function ResultFrame:resetLines()
-    wipe(self.lineCache.used);
+    while (#self.usedLines > 0) do
+        tremove(self.usedLines):reset();
+    end
 end
 
 function ResultFrame:getLine()
-    local cache = self.lineCache;
+    if (self.lines[#self.usedLines + 1]) then
+        tinsert(self.usedLines, self.lines[#self.usedLines + 1])
 
-    if (cache.lines[#cache.used + 1]) then
-        tinsert(cache.used, cache.lines[#cache.used + 1])
-
-        return cache.lines[#cache.used];
+        return self.lines[#self.usedLines];
     end
 
-    local line = CreateFrame('Frame', nil, self);
+    local line = CreateFrame('Frame', nil, self, 'LibWoWUnitLineFrame');
 
-    line.text = line:CreateFontString(nil, "ARTWORK", "GameFontNormal");
+    loadScripts(line, ResultLine);
 
-    tinsert(cache.lines, line);
+    line:setRandomColor();
 
     return self:getLine();
 end
 
 function ResultFrame:addResultLine(deepth, text)
-    local lastLine = self.lineCache.used[#self.lineCache.used];
+    local lastLine = self.usedLines[#self.usedLines];
     local line = self:getLine();
 
     line:ClearAllPoints();
     line:SetPoint('TOPLEFT', lastLine, 'BOTTOMLEFT');
-    line:SetPoint('LEFT');
-    line:SetPoint('RIGHT');
+    line:SetPoint('TOPRIGHT', lastLine, 'BOTTOMRIGHT');
 
     line.text:SetText(text);
     line.text:ClearAllPoints();
-    line.text:SetPoint('LEFT', (deepth) * 8, 0);
-    line.text:SetPoint('RIGHT');
+    line.text:SetPoint('TOPLEFT', (deepth) * 8, 0);
+    line.text:SetPoint('TOPRIGHT');
+    --line.text:SetJustifyH('LEFT');
 
     line:Show();
     line.text:Show();
@@ -298,42 +483,43 @@ end
 
 
 
-function ResultFrame:OnLoad(self)
-    self.shortIndicator = self:CreateFontString(nil, "ARTWORK", "GameFontNormal");
-    self.shortIndicator:SetWordWrap(true);
-    self.shortIndicator:SetJustifyH('LEFT');
-    self.shortIndicator:ClearAllPoints();
-    self.shortIndicator:SetPoint('TOPLEFT');
-    self.shortIndicator:SetPoint('TOPRIGHT');
-    self.shortIndicator.names = {};
-    self.shortIndicator:Show();
+function ResultFrame:OnLoad()
+    self.lines = {};
+    self.usedLines = {};
 
-    self:SetHeight(200);
-    self:SetWidth(150);
-
-    tinsert(self.lineCache.lines, self.shortIndicator);
+    self:ClearAllPoints();
+    self:SetPoint('TOPLEFT');
+    self:SetHeight(1);
+    self:SetWidth(scrollFrame:GetWidth() - 20);
 end
 
 
-function ResultFrame:OnUpdate(self, elapsed, ...)
-    if (self.update == true) then
+function ResultFrame:OnUpdate(elapsed, ...)
+    if (self.updated == true) then
         return;
     end
 
-    self.update = true;
+    self.updated = true;
 
     self:resetLines();
 
 	local line, lastLine, lastTest;
-    local indicatorText, text, sumText = self:getLine(), '', '';
+    local indicatorLine, text, sumText = self:getLine(), '', '';
 
-    indicatorText:SetText('');
+    indicatorLine.text:SetText('');
+    indicatorLine.text:SetMaxLines(0);
+    indicatorLine.text:SetWordWrap(true);
+    indicatorLine:ClearAllPoints();
+    indicatorLine:SetPoint('TOPLEFT');
+    indicatorLine:SetPoint('TOPRIGHT');
+    indicatorLine:Show();
+
 
 	for _, result in ipairs(lib.results) do
         local test = lib.suites[result.suite][result.index];
 
-        sumText = sumText .. lib.ui:getIndicatorText(test.result);
-        indicatorText:SetText(sumText);
+        sumText = sumText .. lib.ui.getIndicatorText(result.result);
+        indicatorLine.text:SetText(sumText);
 
         for i = 1, #test.names - 1, 1 do
             if (not lastTest or lastTest.names[i] ~= test.names[i]) then
@@ -342,13 +528,63 @@ function ResultFrame:OnUpdate(self, elapsed, ...)
             end
         end
 
-        self:addResultLine(#test.names - 1, test.names[#test.names] .. ' (' .. result.result .. ')');
+        self:addResultLine(#test.names - 1, '* ' .. test.names[#test.names] .. ' (' .. result.result .. ')');
 
         lastTest = test;
 	end
 
-    print(resultFrame, resultFrame:GetWidth(), resultFrame:GetHeight());
+    self:SetHeight(indicatorLine.text:GetHeight() + (#self.usedLines * 15));
+    
+    for i = 1, resultFrame:GetNumPoints(), 1 do
+        local point, relativeTo, relativePoint, x, y = resultFrame:GetPoint(i);
+    end
 
-    lib.ui.scrollFrame:UpdateScrollChildRect();
+    scrollFrame:UpdateScrollChildRect();
 end
-        
+
+--[[
+______                _ _   _     _            
+| ___ \              | | | | |   (_)           
+| |_/ /___  ___ _   _| | |_| |    _ _ __   ___ 
+|    // _ \/ __| | | | | __| |   | | '_ \ / _ \
+| |\ \  __/\__ \ |_| | | |_| |___| | | | |  __/
+\_| \_\___||___/\__,_|_|\__\_____/_|_| |_|\___|
+--]]
+
+ResultLine = {}
+
+function ResultLine:OnLoad()
+    local text = self.text or self:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall");
+
+    self:SetHeight(text:GetLineHeight());
+    self:SetWidth(1);
+
+    text:ClearAllPoints();
+    text:SetPoint('TOPLEFT');
+    text:SetPoint('TOPRIGHT');
+    text:SetJustifyH('LEFT');
+    text:SetMaxLines(1);
+    text:SetWordWrap(false);
+
+    self.text = text;
+end
+
+function ResultLine:reset()
+    ResultLine.OnLoad(self);
+
+    self:Hide();
+end
+
+function ResultLine:setRandomColor()
+    local bg = self.bg or self:CreateTexture();
+
+    bg:SetAllPoints();
+
+    local r = math.random(1, 8) / 8;
+    local b = math.random(1, 8) / 8;
+    local g = math.random(1, 8) / 8;
+
+    bg:SetColorTexture(r, g, b);
+
+    self.bg = bg;
+end

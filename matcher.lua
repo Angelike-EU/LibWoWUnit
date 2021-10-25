@@ -9,27 +9,16 @@ local lib = LibStub:GetLibrary("LibWoWUnit", 1);
 
 -- get all global methodes in local user space
 
-local _G, _L = _G, {};
-local type = _G.type;
+local _G, _L = _G, lib.matcher or {};
+local print, tostring, type = print, tostring, type;
+local getmetatable, setmetatable = getmetatable, setmetatable;
 
 lib.matcher = _L;
 
 -- restrict global environment, so we can't accidentally pollute it
 setfenv(1, _L);
 
---[[
- Helper function to register custom mather to the lib
 
- -- arguments:
-   name:string - name of the matcher
-   callbackFn:function - the code of the matcher function
-
- -- returns:
-    name:string - the name of the actual test suite
---]]
-function lib:registerMatcher(name, fn)
-	lib.matcher[name] = fn;
-end
 
 --[[
  Matcher function to compare values
@@ -42,7 +31,13 @@ end
     result:boolean - the result, true if passed, otherwise false
 --]]
 function toBe(input, expected)
-	return input == expected;
+    local result, msg = input == expected;
+
+    if (result == false) then
+        msg = 'expected values to be ' .. tostring(expected) .. ', got: ' .. tostring(input);
+    end
+
+	return result, msg;
 end
 
 --[[
@@ -65,3 +60,70 @@ function toBeType(input, expectedType)
 
 	return inputType == expectedType;
 end
+
+--[[
+ Matcher function to check if an value is defined ( !== nil)
+
+ -- arguments:
+   input:mixed - input data
+
+ -- returns:
+    result:boolean - the result, true if passed, otherwise false
+--]]
+function toBeDefined(input)
+	return input ~= nil;
+end
+
+--[[
+ Matcher function to check if an value is truthy
+
+ -- arguments:
+   input:mixed - input data
+
+ -- returns:
+    result:boolean - the result, true if passed, otherwise false
+--]]
+function toBeTruthy(input)
+	return not not input;
+end
+
+--[[
+ Matcher function to check if an value is true
+
+ -- arguments:
+   input:mixed - input data
+
+ -- returns:
+    result:boolean - the result, true if passed, otherwise false
+--]]
+function toBeTrue(input)
+	return input == true;
+end
+
+
+--[[
+ Matcher function to check if an value is falsy
+
+ -- arguments:
+   input:mixed - input data
+
+ -- returns:
+    result:boolean - the result, true if passed, otherwise false
+--]]
+function toBeFalsy(input)
+	return not input;
+end
+
+--[[
+ Matcher function to check if an value is false
+
+ -- arguments:
+   input:mixed - input data
+
+ -- returns:
+    result:boolean - the result, true if passed, otherwise false
+--]]
+function toBeFalse(input)
+	return input == false;
+end
+
