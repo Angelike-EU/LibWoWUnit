@@ -1,6 +1,6 @@
-## Interface: 11400
+## Interface: 20502
 ## Version: 1.0.0
-## Title: Lib: WoW Unit
+## Title: LibWoWUnit <TBC-Classic>
 ## Notes: A Library to run Test
 ## OptionalDependencies: LibStub
 ## SavedVariables: LibWoWUnitDB, LibWoWUnitLib

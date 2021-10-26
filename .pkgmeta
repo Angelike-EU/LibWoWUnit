@@ -2,4 +2,4 @@ package-as: LibWoWUnit
 enable-nolib-creation: no
 
 ignore:
-	- LibWoWUnit-Test.lua # we don't need framwork tests in package
+	- lib.tests.lua # we don't need framwork tests in package
