@@ -13,7 +13,10 @@ local lib = LibStub('LibWoWUnit', 1);
 
 local assert = assert;
 local wipe = wipe;
-local describe, expect, it = describe, expect, it;
+local describe, fdescribe, xdescribe = describe, fdescribe, xdescribe;
+local afterEach, beforeEach = afterEach, beforeEach;
+local fit, it, xit = fit, it, xit;
+local expect = expect;
 
 setfenv(1, {});
 
@@ -403,6 +406,64 @@ end);
 assert(lib.fatalErrors == nil);
 assert(#lib.tests2run == 1);
 assert(lib.tests2run[1].state == 'Normal');
+assert(lib.tests2run[1].index == 1);
+assert(lib.tests2run[1].suite == 'suite of describe');
+assert(#lib.tests2run[1].names == 3);
+assert(lib.tests2run[1].names[1] == 'suite of describe');
+assert(lib.tests2run[1].names[2] == 'name of describe');
+assert(lib.tests2run[1].names[3] == 'name of it');
+assert(#lib.results == 0);
+assert(lib.runningResult == nil);
+assert(lib.runningTest == nil);
+
+--[[
+test describe in global environment, all set, test name set
+--]]
+
+resetResults();
+
+assert(lib.fatalErrors == nil);
+assert(#lib.tests2run == 0);
+assert(#lib.results == 0);
+assert(lib.runningResult == nil);
+assert(lib.runningTest == nil);
+
+xdescribe('suite of describe', 'name of describe', function() 
+    it('name of it', noop) 
+end);
+
+assert(lib.fatalErrors == nil);
+assert(#lib.tests2run == 1);
+assert(lib.tests2run[1].state == 'Skipped');
+assert(lib.tests2run[1].index == 1);
+assert(lib.tests2run[1].suite == 'suite of describe');
+assert(#lib.tests2run[1].names == 3);
+assert(lib.tests2run[1].names[1] == 'suite of describe');
+assert(lib.tests2run[1].names[2] == 'name of describe');
+assert(lib.tests2run[1].names[3] == 'name of it');
+assert(#lib.results == 0);
+assert(lib.runningResult == nil);
+assert(lib.runningTest == nil);
+
+--[[
+test describe in global environment, all set, test name set
+--]]
+
+resetResults();
+
+assert(lib.fatalErrors == nil);
+assert(#lib.tests2run == 0);
+assert(#lib.results == 0);
+assert(lib.runningResult == nil);
+assert(lib.runningTest == nil);
+
+fdescribe('suite of describe', 'name of describe', function() 
+    it('name of it', noop) 
+end);
+
+assert(lib.fatalErrors == nil);
+assert(#lib.tests2run == 1);
+assert(lib.tests2run[1].state == 'Forced');
 assert(lib.tests2run[1].index == 1);
 assert(lib.tests2run[1].suite == 'suite of describe');
 assert(#lib.tests2run[1].names == 3);
