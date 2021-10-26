@@ -281,3 +281,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/LibWoWUnit.wowproj
+/LibWoWUnit.wowsln
+/LibWoWUnit.toc

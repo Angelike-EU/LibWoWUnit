@@ -1,0 +1,5 @@
+package-as: LibWoWUnit
+enable-nolib-creation: no
+
+ignore:
+	- lib.tests.lua # we don't need framwork tests in package
