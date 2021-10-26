@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Deploy" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Default</Configuration>
+    <Name>LibWoWUnit</Name>
+    <ProjectGuid>52f4a38b-4dfa-4d03-a28e-abb1cd224fd2</ProjectGuid>
+    <AssemblyName>LibWoWUnit</AssemblyName>
+    <RootNamespace>LibWoWUnit</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Default' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="base.lua">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="doc\expect.md">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="example\describe.lua">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="lib.tests.lua">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="lib.lua">
+      <SubType>Code</SubType>
+      <DependentUpon>lib.xml</DependentUpon>
+    </Content>
+    <Content Include="LibWoWUnit.toc">
+      <SubType>TableOfContents</SubType>
+    </Content>
+    <Content Include="lib.xml">
+      <SubType>Frame</SubType>
+    </Content>
+    <Content Include="matcher.lua">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="ui.lua">
+      <SubType>Code</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="example" />
+    <Folder Include="doc" />
+  </ItemGroup>
+  <Import Project="$(DevEnvDir)\Extensions\Tools\MSBuild\AddonStudio\Wow\3.0\WowAddonStudio.targets" />
+  <!--
+  To modify your build process, add your task inside one of the targets below and uncomment it.
+  <Target Name="BeforeClean"></Target>
+  <Target Name="AfterClean"></Target>
+  <Target Name="BeforeRebuild"></Target>
+  <Target Name="AfterRebuild"></Target>
+  <Target Name="BeforeDeploy"></Target>
+  <Target Name="AfterDeploy"></Target>
+  -->
+</Project>
