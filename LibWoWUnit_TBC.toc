@@ -1,0 +1,9 @@
+## Interface: 11400
+## Version: 1.0.0
+## Title: Lib: WoW Unit
+## Notes: A Library to run Test
+## OptionalDependencies: LibStub
+## SavedVariables: LibWoWUnitDB, LibWoWUnitLib
+
+lib.xml
+
