@@ -1,6 +1,6 @@
-## Interface: 90100
+## Interface: 11400
 ## Version: 1.0.0
-## Title: LibWoWUnit <Retail>
+## Title: LibWoWUnit <Classic>
 ## Notes: A Library to run Test
 ## OptionalDependencies: LibStub
 ## SavedVariables: LibWoWUnitDB, LibWoWUnitLib
