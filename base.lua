@@ -21,6 +21,14 @@ lib.base = _L;
 -- restrict global environment, so we can't accidentally pollute it
 setfenv(1, _L);
 
+testStates = {
+    ["Forced"] = 5,
+    ["Semi-Forced"] = 4,
+    ["Normal"] = 3,
+    ["Semi-Skipped"] = 2,
+    ["Skipped"] = 1,
+}
+
 -- define module vars
 outerDescribe = nil;
 file = debugstack(1, 1, 1):match('[Ii]nterface[^\'"]+');
@@ -95,6 +103,28 @@ local function normalizeBlockParams(...)
     end
 end
 
+local function getState(state, parentState)
+    local pState = parentState and testStates[parentState] ~= nil and parentState or 'Normal';
+
+    if (state == 'Skipped') then
+        return 'Skipped';
+    end
+
+    if (testStates[pState] < testStates.Normal) then
+        return 'Semi-Skipped';
+    end
+
+    if (state == 'Forced' and testStates[pState] >= testStates.Normal ) then
+        return 'Forced';
+    end
+
+    if (testStates[pState] > testStates.Normal and testStates[state] >= testStates.Normal) then
+        return 'Semi-Forced';
+    end
+
+    return 'Normal';
+end
+
 --[[
  Helper function to create a data object for describes
 
@@ -139,15 +169,8 @@ function describe(state, ...)
     end
 	
 	current.parent = outerDescribe;
+    current.state = getState(state, outerDescribe and outerDescribe.state);
 
-    if (state == 'Skipped' or (outerDescribe and outerDescribe.state == 'Skipped')) then
-        current.state = 'Skipped';
-    else
-        if (state == 'Forced' or (outerDescribe and outerDescribe.state == 'Forced')) then
-            current.state = 'Forced';
-        end
-    end
-	
 	outerDescribe = current;
 	
 	xpcall(callbackFn, catchOutsideError);
@@ -191,23 +214,21 @@ function it(state, ...)
 	local suite, name, callbackFn = normalizeBlockParams(...);
 
     if (type(callbackFn) ~= 'function') then
-        catchOutsideError('it must have at least one callback function!');
-        
-        return;
-    end
+        if (state == 'Forced') then
+            return catchOutsideError('fit must have at least one callback function!');
+        end
+        if (state == 'Skipped') then
+            return catchOutsideError('xit must have at least one callback function!');
+        end
 
-    test = createIt(name);
-    test.callbackFn = callbackFn;
+        return catchOutsideError('it must have at least one callback function!');
+    end
 
 	parent = outerDescribe;
 
-    if (state == 'Skipped' or (parent and parent.state == 'Skipped')) then
-        test.state = 'Skipped';
-    else
-        if (state == 'Forced' or (parent and parent.state == 'Forced')) then
-            test.state = 'Forced';
-        end
-    end
+    test = createIt(name);
+    test.callbackFn = callbackFn;
+    test.state = getState(state, parent and parent.state);
 
     suite = parent and parent.suite or suite;
 
