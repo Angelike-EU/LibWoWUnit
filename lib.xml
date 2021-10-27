@@ -18,7 +18,12 @@
 	<Script file="ui.lua" />
 
 	<!--@debug@-->
-	<Script file="lib.tests.lua" />
+	<Script file="tests/tests.lua" />
+	<Script file="tests/expect.lua" />
+	<Script file="tests/it.lua" />
+	<Script file="tests/describe.lua" />
+	<Script file="tests/beforeEach.lua" />
+	<Script file="tests/afterEach.lua" />
 	<!--@end-debug@-->
 
 </Ui>
