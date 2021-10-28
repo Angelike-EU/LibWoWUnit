@@ -22,9 +22,14 @@ function testItWithoutParamaters()
 
     it();
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('it must have at least one callback function!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 2);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '#Generated: Invalid callback function!');
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);
@@ -105,9 +110,14 @@ function testFitWithoutParamaters()
 
     fit();
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('fit must have at least one callback function!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 2);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '#Generated: Invalid callback function!');
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);
@@ -188,9 +198,14 @@ function testXitWithoutParamaters()
 
     xit();
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('xit must have at least one callback function!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 2);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '#Generated: Invalid callback function!');
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);

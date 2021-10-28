@@ -94,7 +94,7 @@ function test(name, callbackFn)
     
     if (result[1] ~= true) then 
         print('|cffff0000Failed|r:', unpack(result));
-        _L.error = result;
+        _L.error = result[2];
     end
 
     saveTestResult();
