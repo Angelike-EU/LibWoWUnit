@@ -22,12 +22,19 @@ function testDescribeWithoutParameters()
 
     describe();
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('describe must have at least one callback function!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);
+
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 3);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '');
+    assertSame(lib.tests2run[1].names[3], '#Generated: Invalid callback function!');
 end
 
 function testDescribeWithoutTestBlock()
@@ -39,12 +46,19 @@ function testDescribeWithoutTestBlock()
 
     describe(noopFunc);
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('describe must contain at least one test!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);
+
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 3);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '');
+    assertSame(lib.tests2run[1].names[3], '#Generated: No tests found in describe!');
 end
 
 function testDescribeWithTestBlock()
@@ -275,12 +289,19 @@ function testFdescribeWithoutParameters()
 
     fdescribe();
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('describe must have at least one callback function!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);
+
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 3);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '');
+    assertSame(lib.tests2run[1].names[3], '#Generated: Invalid callback function!');
 end
 
 function testFdescribeWithoutTestBlock()
@@ -292,12 +313,19 @@ function testFdescribeWithoutTestBlock()
 
     fdescribe(noopFunc);
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('describe must contain at least one test!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);
+
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 3);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '');
+    assertSame(lib.tests2run[1].names[3], '#Generated: No tests found in describe!');
 end
 
 function testFdescribeWithTestBlock()
@@ -528,12 +556,19 @@ function testXdescribeWithoutParameters()
 
     xdescribe();
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('describe must have at least one callback function!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);
+
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 3);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '');
+    assertSame(lib.tests2run[1].names[3], '#Generated: Invalid callback function!');
 end
 
 function testXdescribeWithoutTestBlock()
@@ -545,12 +580,19 @@ function testXdescribeWithoutTestBlock()
 
     xdescribe(noopFunc);
 
-    assertSame(#lib.fatalErrors, 1);
-    assert(lib.fatalErrors[1]:match('describe must contain at least one test!') ~= nil);
-    assertSame(#lib.tests2run, 0);
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
     assertSame(lib.runningResult, nil);
     assertSame(lib.runningTest, nil);
+
+    assertSame(lib.tests2run[1].state, 'Ignore');
+    assertSame(lib.tests2run[1].index, 1);
+    assertSame(lib.tests2run[1].suite, 'LibWoWUnit');
+    assertSame(#lib.tests2run[1].names, 3);
+    assertSame(lib.tests2run[1].names[1], 'LibWoWUnit');
+    assertSame(lib.tests2run[1].names[2], '');
+    assertSame(lib.tests2run[1].names[3], '#Generated: No tests found in describe!');
 end
 
 function testXdescribeWithTestBlock()

@@ -11,9 +11,9 @@ local lib = LibStub:GetLibrary("LibWoWUnit", 1);
 -- get all global methodes in local user space
 
 local _G, _L = _G, lib.base or {};
-local debugstack, print, select, type, xpcall = _G.debugstack, _G.print, _G.select, _G.type, _G.xpcall;
+local debugstack, error, print, select, type, xpcall = _G.debugstack, error, _G.print, _G.select, _G.type, _G.xpcall;
 local strsplit, tostring = _G.strsplit, tostring;
-local CopyTable, ipairs, pairs, tconcat, tinsert, tsort = CopyTable, _G.ipairs, _G.pairs, _G.table.concat, _G.table.insert, _G.table.sort;
+local CopyTable, ipairs, pairs, tconcat, tinsert, tremove, tsort = CopyTable, _G.ipairs, _G.pairs, _G.table.concat, _G.table.insert, table.remove, _G.table.sort;
 local getmetatable, setmetatable = getmetatable, setmetatable;
 
 lib.base = _L;
@@ -27,11 +27,13 @@ testStates = {
     ["Normal"] = 3,
     ["Semi-Skipped"] = 2,
     ["Skipped"] = 1,
+    ["Ignore"] = 0
 }
 
 -- define module vars
 outerDescribe = nil;
 file = debugstack(1, 1, 1):match('[Ii]nterface[^\'"]+');
+test2build = {};
 
 --[[
  Helper function to catch all errors thrown outside test scope
@@ -58,12 +60,13 @@ end
  -- returns:
     nil
 --]]
-function catchRuntimeError(msg)
+function catchRuntimeError(msg, stack)
     local test = lib.results[#lib.results];
+    stack = stack and stack or debugstack(2)
 
     test.errors = test.errors or {};
 
-	tinsert(test.errors, {msg, debugstack(2)});
+	tinsert(test.errors, {msg, stack});
 end
 
 --[[
@@ -89,7 +92,7 @@ function getSuiteName(name)
     return 'Global';
 end
 
-local function normalizeBlockParams(...)
+function normalizeBlockParams(...)
     if (select('#', ...) == 3) then
         return ...;
     end
@@ -103,11 +106,11 @@ local function normalizeBlockParams(...)
     end
 end
 
-local function getState(state, parentState)
+function getState(state, parentState)
     local pState = parentState and testStates[parentState] ~= nil and parentState or 'Normal';
 
-    if (state == 'Skipped') then
-        return 'Skipped';
+    if (state == 'Skipped' or state == 'Ignore') then
+        return state;
     end
 
     if (testStates[pState] < testStates.Normal) then
@@ -123,6 +126,66 @@ local function getState(state, parentState)
     end
 
     return 'Normal';
+end
+
+--[[---------------------------------------------------------------------------
+ builds an test object that can be runned by the runner
+
+ -- argumnts:
+   testData:table - information about the test data
+
+ -- returns:
+    nil
+-----------------------------------------------------------------------------]]
+function buildTestObject(testData)
+    if (type(testData) ~= 'table') then
+        return;
+    end
+
+    local test, parent = createIt(), testData;
+
+    test.callbackFn = testData.callbackFn;
+    test.state = getState(testData.state, testData.parent and testData.parent.state);
+
+	while (parent) do
+		tinsert(test.names, 1, parent.name);
+		
+        if (parent.beforeEach) then
+            test.before = test.before or {};
+            for k, v in ipairs(parent.beforeEach) do 
+                tinsert(test.before, k, v)
+            end
+        end
+		
+        if (parent.afterEach) then
+            test.after = test.after or {};
+            for k, v in ipairs(parent.afterEach) do 
+                tinsert(test.after, v)
+            end
+		end
+
+		if (parent.parent == nil and suite == nil) then
+            suite = parent.suite;              
+        end
+
+        if (parent.parent == nil) then
+            break;
+        end
+
+		parent = parent.parent;
+	end
+
+    test.suite = getSuiteName(parent.suite);
+    tinsert(test.names, 1, test.suite);
+
+    if (lib.suites[test.suite] == nil) then
+        lib.suites[test.suite] = {};
+    end
+
+    test.index = #lib.suites[test.suite] + 1;
+
+	tinsert(lib.suites[test.suite], test);
+	tinsert(lib.tests2run, test);
 end
 
 --[[
@@ -154,32 +217,50 @@ end
 --]]
 function describe(state, ...)
 	local suite, name, callbackFn = normalizeBlockParams(...);
+	local currentDescribe, numTestsBefore = createDescribe(name), #test2build;
+    local stack = debugstack(2);
 
     if (type(callbackFn) ~= 'function') then
-        catchOutsideError('describe must have at least one callback function!');
-        
-        return;
+        tinsert(test2build, {
+            ['callbackFn'] = function()
+                catchRuntimeError('describe must have at least one callback function!', stack);
+            end,
+            ['name'] = '#Generated: Invalid callback function!',
+            ['parent'] = currentDescribe,
+            ['state'] = 'Ignore',
+            ['suite'] = getSuiteName(suite),
+        });
+        callbackFn = function() end;
     end
     
-	local current = createDescribe(name);
-    local numTestsBefore = #lib.tests2run;
-    
-    if (outerDescribe == nil) then
-        current.suite = getSuiteName(suite);
-    end
-	
-	current.parent = outerDescribe;
-    current.state = getState(state, outerDescribe and outerDescribe.state);
+	currentDescribe.parent = outerDescribe;
+    currentDescribe.name = name and name or '';
+    currentDescribe.state = getState(state, outerDescribe and outerDescribe.state);
+    currentDescribe.suite = suite;
 
-	outerDescribe = current;
+	outerDescribe = currentDescribe;
 	
 	xpcall(callbackFn, catchOutsideError);
 
-    if (numTestsBefore == #lib.tests2run) then
-        catchOutsideError('describe must contain at least one test!');
+	outerDescribe = currentDescribe.parent;
+
+    if (numTestsBefore == #test2build) then
+        tinsert(test2build, {
+            ['callbackFn'] = function()
+                catchRuntimeError('describe must contain at least one test!', stack);
+            end,
+            ['name'] = '#Generated: No tests found in describe!',
+            ['parent'] = currentDescribe,
+            ['state'] = 'Ignore',
+            ['suite'] = getSuiteName(suite),
+        });
     end
-	
-	outerDescribe = current.parent;
+
+    if (outerDescribe == nil) then
+        while (#test2build > 0) do
+            buildTestObject(tremove(test2build, 1));
+        end 
+    end
 end
 
 --[[
@@ -191,9 +272,9 @@ end
  -- returns:
     data:table - a data object with all tables for each run
 --]]
-function createIt(name)
+function createIt()
 	return {
-		['names'] = { name },
+		['names'] = {},
 		['state'] = 'Normal',
 	}
 end
@@ -210,65 +291,31 @@ end
     nil
 --]]
 function it(state, ...)
-    local test, parent;
 	local suite, name, callbackFn = normalizeBlockParams(...);
 
     if (type(callbackFn) ~= 'function') then
-        if (state == 'Forced') then
-            return catchOutsideError('fit must have at least one callback function!');
-        end
-        if (state == 'Skipped') then
-            return catchOutsideError('xit must have at least one callback function!');
-        end
+        local stack = debugstack(2);
 
-        return catchOutsideError('it must have at least one callback function!');
+        callbackFn = function()
+            catchRuntimeError('it must have at least one callback function!', stack);
+        end
+        name = '#Generated: Invalid callback function!';
+        state = 'Ignore';
     end
 
-	parent = outerDescribe;
+    local testData = {
+        ['callbackFn'] = callbackFn,
+        ['name'] = name,
+        ['parent'] = outerDescribe,
+        ['state'] = getState(state, outerDescribe and outerDescribe.state),
+        ['suite'] = getSuiteName(suite),
+    };
 
-    test = createIt(name);
-    test.callbackFn = callbackFn;
-    test.state = getState(state, parent and parent.state);
-
-    suite = parent and parent.suite or suite;
-
-	while (parent) do
-		tinsert(test.names, 1, parent.name);
-		
-        if (parent.beforeEach) then
-            test.before = test.before or {};
-            for k, v in ipairs(parent.beforeEach) do 
-                tinsert(test.before, k, v)
-            end
-        end
-		
-        if (parent.afterEach) then
-            test.after = test.after or {};
-            for k, v in ipairs(parent.afterEach) do 
-                tinsert(test.after, v)
-            end
-		end
-
-		if (parent.parent == nil and suite == nil) then
-            suite = parent.suite;              
-        end
-
-		parent = parent.parent;
-	end
-
-    suite = getSuiteName(suite);
-    tinsert(test.names, 1, suite);
-
-    test.suite = suite;
-
-    if (lib.suites[suite] == nil) then
-        lib.suites[suite] = {};
+    if (outerDescribe == nil) then
+        return buildTestObject(testData);
     end
 
-    test.index = #lib.suites[suite] + 1;
-
-	tinsert(lib.suites[suite], test);
-	tinsert(lib.tests2run, test);
+    tinsert(test2build, testData);
 end
 
 --[[
@@ -282,7 +329,14 @@ end
 --]]
 function beforeEach(callbackFn)
 	if (outerDescribe == nil) then
-		return error('beforeEach can only be called within describe blocks', 2);
+		return catchOutsideError('beforeEach can only be called within describe blocks!');
+	end
+
+    if (type(callbackFn) ~= 'function') then
+        local stack = debugstack(2);
+        callbackFn = function()
+            catchRuntimeError('beforeEach must have a callback function!', stack);
+        end
 	end
 
     if (outerDescribe.beforeEach == nil) then
@@ -303,7 +357,14 @@ end
 --]]
 function afterEach(callbackFn)
 	if (outerDescribe == nil) then
-		return error('afterEach can only be called within describe blocks', 2);
+		return catchOutsideError('afterEach can only be called within describe blocks!');
+	end
+
+    if (type(callbackFn) ~= 'function') then
+        local stack = debugstack(2);
+        callbackFn = function()
+            catchRuntimeError('afterEach must have a callback function!', stack);
+        end
 	end
 
     if (outerDescribe.afterEach == nil) then
