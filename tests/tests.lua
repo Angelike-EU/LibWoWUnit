@@ -46,10 +46,11 @@ frame:RegisterAllEvents();
 -----------------------------------------------------------------------------]]
 function resetResults()
     lib.fatalErrors = nil;
+    lib.results = {};
     lib.runningResult = nil;
     lib.runningTest = nil;
-    lib.tests2run = {};
     lib.suites = {};
+    lib.tests2run = {};
 
     _L.name = nil;
     _L.error = nil;
@@ -71,7 +72,8 @@ function saveTestResult()
         runningResult = lib.runningResult,
         runningTest = lib.runningTest,
         tests2run = lib.tests2run,
-        suites = lib.suites
+        suites = lib.suites,
+        results = lib.results
     });
 end
 
@@ -98,6 +100,7 @@ function test(name, callbackFn)
     end
 
     saveTestResult();
+    resetResults();
 end
 
 function assertSame(a, b)
@@ -127,7 +130,5 @@ end
     nil
 -----------------------------------------------------------------------------]]
 function throwFunc()
-    local b = nil;
-
-    b();
+    error('An error thrown in a callback function');
 end

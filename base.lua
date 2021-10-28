@@ -11,7 +11,7 @@ local lib = LibStub:GetLibrary("LibWoWUnit", 1);
 -- get all global methodes in local user space
 
 local _G, _L = _G, lib.base or {};
-local debugstack, error, print, select, type, xpcall = _G.debugstack, error, _G.print, _G.select, _G.type, _G.xpcall;
+local debugstack, error, pcall, print, select, type, xpcall = _G.debugstack, error, pcall, _G.print, _G.select, _G.type, _G.xpcall;
 local strsplit, tostring = _G.strsplit, tostring;
 local CopyTable, ipairs, pairs, tconcat, tinsert, tremove, tsort = CopyTable, _G.ipairs, _G.pairs, _G.table.concat, _G.table.insert, table.remove, _G.table.sort;
 local getmetatable, setmetatable = getmetatable, setmetatable;
@@ -66,7 +66,7 @@ function catchRuntimeError(msg, stack)
 
     test.errors = test.errors or {};
 
-	tinsert(test.errors, {msg, stack});
+	tinsert(test.errors, {msg, strsplit('\n', stack)});
 end
 
 --[[
@@ -240,9 +240,21 @@ function describe(state, ...)
 
 	outerDescribe = currentDescribe;
 	
-	xpcall(callbackFn, catchOutsideError);
+	local success, msg = pcall(callbackFn);
 
 	outerDescribe = currentDescribe.parent;
+
+    if (success ~= true) then
+        tinsert(test2build, {
+            ['callbackFn'] = function()
+                catchRuntimeError(msg, stack);
+            end,
+            ['name'] = '#Generated: Error in callback function!',
+            ['parent'] = currentDescribe,
+            ['state'] = 'Ignore',
+            ['suite'] = getSuiteName(suite),
+        });
+    end
 
     if (numTestsBefore == #test2build) then
         tinsert(test2build, {

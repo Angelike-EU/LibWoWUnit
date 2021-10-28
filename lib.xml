@@ -24,6 +24,9 @@
 	<Script file="tests/describe.lua" />
 	<Script file="tests/beforeEach.lua" />
 	<Script file="tests/afterEach.lua" />
+	<Script file="tests/matcher.lua" />
+	<Script file="tests/runner.lua" />
+	<Script file="tests/ui.lua" />
 	<!--@end-debug@-->
 
 </Ui>
