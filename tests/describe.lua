@@ -17,16 +17,14 @@ function testDescribeWithoutParameters()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe();
 
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Ignore');
     assertSame(lib.tests2run[1].index, 1);
@@ -41,16 +39,14 @@ function testDescribeWithoutTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe(noopFunc);
 
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Ignore');
     assertSame(lib.tests2run[1].index, 1);
@@ -65,8 +61,7 @@ function testDescribeWithTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe(function() 
         it(noopFunc);
@@ -77,8 +72,7 @@ function testDescribeWithTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Normal');
     assertSame(lib.tests2run[1].index, 1);
@@ -109,8 +103,7 @@ function testDescribeWithNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('name of describe', function() 
         it(noopFunc);
@@ -121,8 +114,7 @@ function testDescribeWithNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Normal');
     assertSame(lib.tests2run[1].index, 1);
@@ -153,8 +145,7 @@ function testDescribeWithSuiteNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('name of suite', 'name of describe', function() 
         it(noopFunc);
@@ -165,8 +156,7 @@ function testDescribeWithSuiteNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
     assertSame(lib.tests2run[1].state, 'Normal');
     assertSame(lib.tests2run[1].index, 1);
     assertSame(lib.tests2run[1].suite, 'name of suite');
@@ -196,8 +186,7 @@ function testDescribeWithSuiteNameAndTestNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('name of suite', 'name of describe', function() 
         it('name of it', noopFunc) 
@@ -208,8 +197,7 @@ function testDescribeWithSuiteNameAndTestNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Normal');
     assertSame(lib.tests2run[1].index, 1);
@@ -240,8 +228,7 @@ function testDescribeWithSuiteNameAndTestSuiteNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('suite of describe', 'name of describe', function() 
         it('suite of it', 'name of it', noopFunc) 
@@ -252,8 +239,7 @@ function testDescribeWithSuiteNameAndTestSuiteNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Normal');
     assertSame(lib.tests2run[1].index, 1);
@@ -284,16 +270,14 @@ function testFdescribeWithoutParameters()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     fdescribe();
 
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Ignore');
     assertSame(lib.tests2run[1].index, 1);
@@ -308,16 +292,14 @@ function testFdescribeWithoutTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     fdescribe(noopFunc);
 
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Ignore');
     assertSame(lib.tests2run[1].index, 1);
@@ -332,8 +314,7 @@ function testFdescribeWithTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     fdescribe(function() 
         it(noopFunc);
@@ -344,8 +325,7 @@ function testFdescribeWithTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Semi-Forced');
     assertSame(lib.tests2run[1].index, 1);
@@ -376,8 +356,7 @@ function testFdescribeWithNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     fdescribe('name of fdescribe', function() 
         it(noopFunc);
@@ -388,8 +367,7 @@ function testFdescribeWithNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Semi-Forced');
     assertSame(lib.tests2run[1].index, 1);
@@ -420,8 +398,7 @@ function testFdescribeWithSuiteNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     fdescribe('name of suite', 'name of fdescribe', function() 
         it(noopFunc);
@@ -432,8 +409,7 @@ function testFdescribeWithSuiteNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
     assertSame(lib.tests2run[1].state, 'Semi-Forced');
     assertSame(lib.tests2run[1].index, 1);
     assertSame(lib.tests2run[1].suite, 'name of suite');
@@ -463,8 +439,7 @@ function testFdescribeWithSuiteNameAndTestNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     fdescribe('name of suite', 'name of fdescribe', function() 
         it('name of it', noopFunc) 
@@ -475,8 +450,7 @@ function testFdescribeWithSuiteNameAndTestNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Semi-Forced');
     assertSame(lib.tests2run[1].index, 1);
@@ -507,8 +481,7 @@ function testFdescribeWithSuiteNameAndTestSuiteNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     fdescribe('suite of fdescribe', 'name of fdescribe', function() 
         it('suite of it', 'name of it', noopFunc) 
@@ -519,8 +492,7 @@ function testFdescribeWithSuiteNameAndTestSuiteNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Semi-Forced');
     assertSame(lib.tests2run[1].index, 1);
@@ -551,16 +523,14 @@ function testXdescribeWithoutParameters()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     xdescribe();
 
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Ignore');
     assertSame(lib.tests2run[1].index, 1);
@@ -575,16 +545,14 @@ function testXdescribeWithoutTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     xdescribe(noopFunc);
 
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 1);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Ignore');
     assertSame(lib.tests2run[1].index, 1);
@@ -599,8 +567,7 @@ function testXdescribeWithTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     xdescribe(function() 
         it(noopFunc);
@@ -611,8 +578,7 @@ function testXdescribeWithTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Semi-Skipped');
     assertSame(lib.tests2run[1].index, 1);
@@ -643,8 +609,7 @@ function testXdescribeWithNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     xdescribe('name of xdescribe', function() 
         it(noopFunc);
@@ -655,8 +620,7 @@ function testXdescribeWithNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Semi-Skipped');
     assertSame(lib.tests2run[1].index, 1);
@@ -687,8 +651,7 @@ function testXdescribeWithSuiteNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     xdescribe('name of suite', 'name of xdescribe', function() 
         it(noopFunc);
@@ -699,8 +662,7 @@ function testXdescribeWithSuiteNameAndTestBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
     assertSame(lib.tests2run[1].state, 'Semi-Skipped');
     assertSame(lib.tests2run[1].index, 1);
     assertSame(lib.tests2run[1].suite, 'name of suite');
@@ -730,8 +692,7 @@ function testXdescribeWithSuiteNameAndTestNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     xdescribe('name of suite', 'name of xdescribe', function() 
         it('name of it', noopFunc) 
@@ -742,8 +703,7 @@ function testXdescribeWithSuiteNameAndTestNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Semi-Skipped');
     assertSame(lib.tests2run[1].index, 1);
@@ -774,8 +734,7 @@ function testXdescribeWithSuiteNameAndTestSuiteNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     xdescribe('suite of xdescribe', 'name of xdescribe', function() 
         it('suite of it', 'name of it', noopFunc) 
@@ -786,8 +745,7 @@ function testXdescribeWithSuiteNameAndTestSuiteNameBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 3);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     assertSame(lib.tests2run[1].state, 'Semi-Skipped');
     assertSame(lib.tests2run[1].index, 1);

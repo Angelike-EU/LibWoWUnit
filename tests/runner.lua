@@ -106,3 +106,59 @@ function testRunWithDescribeAndEmptyTests()
     assertSame(lib.results[3].result, 'Error');
     assert(lib.results[3].errors[1][1]:match('it must have at least one callback function!') ~= nil);
 end
+
+function testRunWithDescribeAndNoopTests()
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 0);
+
+    describe(function()
+        it(noopFunc);
+        fit(noopFunc);
+        xit(noopFunc);
+    end);
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 3);
+    assertSame(#lib.results, 0);
+
+    runAllTests();
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 3);
+    assertSame(lib.results[1].result, 'Skipped-Implicit');
+    assertSame(lib.results[1].expects, 0);
+    assertSame(lib.results[2].result, 'Risky');
+    assertSame(lib.results[2].expects, 0);
+    assertSame(lib.results[3].result, 'Skipped');
+    assertSame(lib.results[3].expects, 0);
+end
+
+function testRunWithDescribeAndValidTests()
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 0);
+
+    describe(function()
+        it(function() expect(true).toBeDefined(); end);
+        fit(function() expect(true).toBeDefined(); end);
+        xit(function() expect(true).toBeDefined(); end);
+    end);
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 3);
+    assertSame(#lib.results, 0);
+
+    runAllTests();
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 3);
+    assertSame(lib.results[1].result, 'Skipped-Implicit');
+    assertSame(lib.results[1].expects, 0);
+    assertSame(lib.results[2].result, 'Success');
+    assertSame(lib.results[2].expects, 1);
+    assertSame(lib.results[3].result, 'Skipped');
+    assertSame(lib.results[3].expects, 0);
+end

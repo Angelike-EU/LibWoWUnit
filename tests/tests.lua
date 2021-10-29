@@ -47,8 +47,7 @@ frame:RegisterAllEvents();
 function resetResults()
     lib.fatalErrors = nil;
     lib.results = {};
-    lib.runningResult = nil;
-    lib.runningTest = nil;
+    lib.base.activeResult = nil;
     lib.suites = {};
     lib.tests2run = {};
 
@@ -69,8 +68,7 @@ function saveTestResult()
         testError = _L.error,
         testName = _L.name,
         fatalErrors = lib.fatalErrors,
-        runningResult = lib.runningResult,
-        runningTest = lib.runningTest,
+        runningResult = lib.base.activeResult,
         tests2run = lib.tests2run,
         suites = lib.suites,
         results = lib.results
