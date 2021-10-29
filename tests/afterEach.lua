@@ -17,8 +17,7 @@ function testAfterEachInGlobalScope()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     result = afterEach(noopFunc);
 
@@ -27,16 +26,14 @@ function testAfterEachInGlobalScope()
     assert(lib.fatalErrors[1]:match('afterEach can only be called within describe blocks!') ~= nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 end
 
 function testAfterEachInDescribeBlockWithoutParams()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('afterEach describe', function()
         afterEach();
@@ -52,8 +49,7 @@ function testAfterEachInDescribeBlockWithoutParams()
     assertSame(#lib.tests2run[2].after, 1);
     assertSame(#lib.tests2run[3].after, 1);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 end
 
 function testAfterEachInDescribeBlock()
@@ -62,8 +58,7 @@ function testAfterEachInDescribeBlock()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('afterEach describe', function()
         afterEach(func);
@@ -82,8 +77,7 @@ function testAfterEachInDescribeBlock()
     assertSame(#lib.tests2run[3].after, 1);
     assertSame(lib.tests2run[3].after[1], func);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 end
 
 function testAfterEachInDescribeWithMiltipleOccurence()
@@ -93,8 +87,7 @@ function testAfterEachInDescribeWithMiltipleOccurence()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('afterEach describe', function()
         afterEach(func1);
@@ -117,8 +110,7 @@ function testAfterEachInDescribeWithMiltipleOccurence()
     assertSame(lib.tests2run[3].after[1], func1);
     assertSame(lib.tests2run[3].after[2], func2);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 end
 
 function testAfterEachInDescribeWithMiltipleOccurenceAfterIt()
@@ -128,8 +120,7 @@ function testAfterEachInDescribeWithMiltipleOccurenceAfterIt()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('afterEach describe', function()
         afterEach(func1);
@@ -153,8 +144,7 @@ function testAfterEachInDescribeWithMiltipleOccurenceAfterIt()
     assertSame(lib.tests2run[3].after[1], func1);
     assertSame(lib.tests2run[3].after[2], func2);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 end
 
 function testAfterEachInDescribeWithMiltipleOccurenceInDiffenrentBlocks()
@@ -164,8 +154,7 @@ function testAfterEachInDescribeWithMiltipleOccurenceInDiffenrentBlocks()
     assertSame(lib.fatalErrors, nil);
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 
     describe('outer describe', function()
         afterEach(func1);
@@ -191,6 +180,5 @@ function testAfterEachInDescribeWithMiltipleOccurenceInDiffenrentBlocks()
     assertSame(lib.tests2run[3].after[1], func2);
     assertSame(lib.tests2run[3].after[2], func1);
     assertSame(#lib.results, 0);
-    assertSame(lib.runningResult, nil);
-    assertSame(lib.runningTest, nil);
+    assertSame(lib.base.activeResult, nil);
 end

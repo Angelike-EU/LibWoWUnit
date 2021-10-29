@@ -34,6 +34,7 @@ testStates = {
 outerDescribe = nil;
 file = debugstack(1, 1, 1):match('[Ii]nterface[^\'"]+');
 test2build = {};
+activeResult = nil;
 
 --[[
  Helper function to catch all errors thrown outside test scope
@@ -61,12 +62,11 @@ end
     nil
 --]]
 function catchRuntimeError(msg, stack)
-    local test = lib.results[#lib.results];
     stack = stack and stack or debugstack(2)
 
-    test.errors = test.errors or {};
+    activeResult.errors = activeResult.errors or {};
 
-	tinsert(test.errors, {msg, strsplit('\n', stack)});
+	tinsert(activeResult.errors, {msg, strsplit('\n', stack)});
 end
 
 --[[
@@ -387,22 +387,28 @@ function afterEach(callbackFn)
 end
 
 --[[
- detects forced tests in a test suite
+ gets the maximum run state of a suite
 
  -- argumnts:
    suite:string - suite name to search in
 
  -- returns:
-    result:boolean - true when forced tests are detected, otherwise false
+    result:string - run level for suite
 --]]
-function hasForcedTests(suite) 
+function getSuiteState(suite)
+    local maxRunState = 'Normal';
+
 	for _, test in ipairs(lib.suites[suite]) do
-        if (test.state == 'Forced') then
-            return true;
+        if (testStates[test.state] > testStates[maxRunState]) then
+            maxRunState = test.state;
+        end
+
+        if (maxRunState == 'Forced') then
+            break;
         end
 	end
 	
-	return false;
+	return maxRunState;
 end
 
 --[[---------------------------------------------------------------------------
@@ -415,23 +421,19 @@ end
     nil
 -----------------------------------------------------------------------------]]
 function runTest(test)
-    local runningTest = {
+    local currentResult = {
         ['expects'] = 0,
         ['index'] = test.index,
         ['result'] = 'Risky',
         ['suite'] = test.suite,
     };
+    local suiteState = getSuiteState(test.suite);
 
-    tinsert(lib.results, runningTest);
+    tinsert(lib.results, currentResult);
+    activeResult = currentResult;
 
-    if (test.state == 'Skipped') then
-        runningTest.result = 'Skipped';
-
-        return;
-    end
-
-    if (forcesTests and test.state ~= 'Forced') then
-        runningTest.result = 'Skipped-Implicit';
+    if (testStates[test.state] < testStates[suiteState] and test.state ~= 'Ignore') then
+        currentResult.result = test.state == 'Skipped' and test.state or 'Skipped-Implicit';
 
         return;
     end
@@ -450,20 +452,22 @@ function runTest(test)
         end
     end
 
-    if (runningTest.errors) then
-        runningTest.result = 'Error';
+    activeResult = nil;
+
+    if (currentResult.errors) then
+        currentResult.result = 'Error';
 
         return
     end
 
-    if (runningTest.failures) then
-        runningTest.result = 'Failed';
+    if (currentResult.failures) then
+        currentResult.result = 'Failed';
 
         return;
     end
 
-    if (runningTest.expects > 0) then
-        runningTest.result = 'Success';
+    if (currentResult.expects > 0) then
+        currentResult.result = 'Success';
     end
 end
 
@@ -539,12 +543,12 @@ local expectMetatable = {
 
 	
 function expect(input)
-    if (lib.runningTest == nil) then
+    if (activeResult == nil) then
         catchOutsideError('expect can only called inside a it block!');
     end
 
     local mt = CopyTable(expectMetatable);
-    mt.result = lib.runningResult or {expects = 0};
+    mt.result = activeResult or {expects = 0};
     mt.input = input;
 
 	return setmetatable({}, mt);
