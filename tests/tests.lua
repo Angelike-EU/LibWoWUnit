@@ -11,30 +11,24 @@
 
 local lib = LibStub('LibWoWUnit', 1);
 
-local _L = setmetatable({}, {__index = _G});
+local mt = {
+    __index = _G,
+    __newindex = function(t, name, value)
+        if (type(value) ~= 'function' or name:match('^test[A-Z]') == nil) then
+            rawset(t, name, value);
+        else
+            t.test(name, value);
+        end
+    end
+}
+
+local _L = setmetatable({}, mt);
 
 lib.tests = _L;
 
 setfenv(1, _L);
 
 completedTestData = {};
-
-local frame = CreateFrame('Frame');
-
-frame:SetScript('OnEvent', function(self)
-    self:UnregisterAllEvents();
-
-    for k, v in pairs(_L) do
-        if (type(k) == 'string' and k:match('^test[A-Z]')) then
-            test(k, v);
-        end
-    end
-    
-    self:SetScript('OnEvent', nil);
-end);
-
-frame:RegisterAllEvents();
-
 
 --[[---------------------------------------------------------------------------
  resets library to it's defaults

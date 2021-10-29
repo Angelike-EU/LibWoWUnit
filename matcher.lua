@@ -29,15 +29,14 @@ setfenv(1, _L);
 
  -- returns:
     result:boolean - the result, true if passed, otherwise false
+    msg:string - an error message
 --]]
 function toBe(input, expected)
-    local result, msg = input == expected;
-
-    if (result == false) then
-        msg = 'expected values to be ' .. tostring(expected) .. ', got: ' .. tostring(input);
+    if (input ~= expected) then
+        return false, 'expected values to be ' .. tostring(expected) .. ', got: ' .. tostring(input);
     end
 
-	return result, msg;
+	return true;
 end
 
 --[[
@@ -49,6 +48,7 @@ end
 
  -- returns:
     result:boolean - the result, true if passed, otherwise false
+    msg:string - an error message
 --]]
 function toBeType(input, expectedType)
 	local inputType = type(input);
@@ -69,9 +69,14 @@ end
 
  -- returns:
     result:boolean - the result, true if passed, otherwise false
+    msg:string - an error message
 --]]
 function toBeDefined(input)
-	return input ~= nil;
+	if (input == nil) then
+        return false, 'expect input to be defined, got: ' .. tostring(input);
+    end
+
+    return true
 end
 
 --[[
@@ -82,9 +87,14 @@ end
 
  -- returns:
     result:boolean - the result, true if passed, otherwise false
+    msg:string - an error message
 --]]
 function toBeTruthy(input)
-	return not not input;
+    if (not input) then
+        return false, 'expect input to be truthy, got: ' .. tostring(input) .. '(' .. tostring(not not input) .. ')';
+    end
+
+	return true;
 end
 
 --[[
@@ -95,9 +105,14 @@ end
 
  -- returns:
     result:boolean - the result, true if passed, otherwise false
+    msg:string - an error message
 --]]
 function toBeTrue(input)
-	return input == true;
+    if (input ~= true) then
+        return false, 'expect input to be true, got: ' .. tostring(input);
+    end
+
+	return true;
 end
 
 
@@ -109,9 +124,14 @@ end
 
  -- returns:
     result:boolean - the result, true if passed, otherwise false
+    msg:string - an error message
 --]]
 function toBeFalsy(input)
-	return not input;
+    if (input) then
+        return false, 'expect input to be falsy, got: ' .. tostring(input) .. '(' .. tostring(not input) .. ')';
+    end
+
+	return true;
 end
 
 --[[
@@ -122,8 +142,13 @@ end
 
  -- returns:
     result:boolean - the result, true if passed, otherwise false
+    msg:string - an error message
 --]]
 function toBeFalse(input)
-	return input == false;
+    if (input ~= false) then
+        return false, 'expect input to be false, got: ' .. tostring(input);
+    end
+
+	return true;
 end
 
