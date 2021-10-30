@@ -28,7 +28,8 @@ lib.tests = _L;
 
 setfenv(1, _L);
 
-completedTestData = {};
+successTest = {};
+failedTest = {};
 
 --[[---------------------------------------------------------------------------
  resets library to it's defaults
@@ -58,7 +59,7 @@ end
     nil
 -----------------------------------------------------------------------------]]
 function saveTestResult()
-    tinsert(completedTestData,  {
+    local resultSet = {
         testError = _L.error,
         testName = _L.name,
         fatalErrors = lib.fatalErrors,
@@ -66,7 +67,13 @@ function saveTestResult()
         tests2run = lib.tests2run,
         suites = lib.suites,
         results = lib.results
-    });
+    };
+
+    if (testOk == true) then
+        tinsert(successTest, resultSet);
+    else 
+        tinsert(failedTest, resultSet);
+    end
 end
 
 --[[---------------------------------------------------------------------------
@@ -85,8 +92,9 @@ function test(name, callbackFn)
     local result = { pcall(callbackFn) };
 
     _L.name = name;
+    _L.testOk = result[1] == true;
     
-    if (result[1] ~= true) then 
+    if (_L.testOk ~= true) then 
         print('|cffff0000Failed|r:', unpack(result));
         _L.error = result[2];
     end

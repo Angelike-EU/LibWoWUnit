@@ -422,7 +422,6 @@ end
 -----------------------------------------------------------------------------]]
 function runTest(test)
     local currentResult = {
-        ['expects'] = 0,
         ['index'] = test.index,
         ['result'] = 'Risky',
         ['suite'] = test.suite,
@@ -466,7 +465,7 @@ function runTest(test)
         return;
     end
 
-    if (currentResult.expects > 0) then
+    if (currentResult.pendingExpect and #currentResult.pendingExpect == 0) then
         currentResult.result = 'Success';
     end
 end
@@ -497,61 +496,74 @@ local expectMetatable = {
     ...:mixed - the argumets the method was called with, to be passed thoug the matcher method
 
     -- returns:
-    nil
+        success:boolean - status of the operation
     --]]
     __call = function(t, ...)
-        local mt = getmetatable(t)
+        local mt = getmetatable(t);
         local input = mt.input;
         local operator = mt.operator;
         local expectedResult = operator:match('^not') ~= 'not';
         local errors = mt.result.errors or {};
+
+        for k, v in ipairs(mt.result.pendingExpect) do
+            if (v == t) then
+                tremove(mt.result.pendingExpect, k);
+                break;
+            end
+        end
 
         if (expectedResult == false) then
             -- delete leading not, correct first char case;
             operator = operator:sub(4, 4):lower() .. operator:sub(5) ;
         end
 
-        mt.result.expects = mt.result.expects + 1;
-
         if (lib.matcher[operator] == nil) then
             tinsert(errors, 'call an unknown matcher function: ' .. operator);
             mt.result.errors = errors;
             
-            return t;
+            return false;
         end
 
-        local result, msg = lib.matcher[operator](input, ...);
+        local result, msg = lib.matcher[operator](input, {...});
 
         if (result == expectedResult) then
-            return t;
+            return true;
         end
 
         tinsert(errors, 'operator ' .. operator .. ' failed.\n' .. tostring(msg))
         mt.result.errors = errors;
 
-        return t;
+        return false;
     end,
     __index = function(t, name)
-        local mt = getmetatable(t)
+        getmetatable(t).operator = name;
 
-        mt.operator = name;
-
-        return setmetatable(t, mt);
+        return t;
     end,
     operator = nil,
 }
 
 	
-function expect(input)
+function expect(...)
+    local mt, t, result = CopyTable(expectMetatable), {}, activeResult or {};
+
     if (activeResult == nil) then
-        catchOutsideError('expect can only called inside a it block!');
+       catchOutsideError('expect can only called inside a it block!');
     end
 
-    local mt = CopyTable(expectMetatable);
-    mt.result = activeResult or {expects = 0};
-    mt.input = input;
+    if (select('#', ...) == 0) then
+        catchRuntimeError('expect should have at least one paramater!');
+    end
+    
+    setmetatable(t, mt);
 
-	return setmetatable({}, mt);
+    result.pendingExpect = result.pendingExpect or {};
+    tinsert(result.pendingExpect, t);
+
+    mt.result = result;
+    mt.input = {...};
+
+	return t;
 end
 
 _G['it'] = function(...) it('Normal', ...); end;
