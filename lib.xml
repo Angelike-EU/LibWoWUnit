@@ -11,22 +11,22 @@
 	<Button name="LibWoWUnitMinimizeButton" parentKey="minimize" virtual="true" />
 	<Button name="LibWoWUnitResizeButton" parentKey="resize" virtual="true" />
 
-	<Script file="LibStub/LibStub.lua" />
+	<Script file="LibStub\LibStub.lua" />
 	<Script file="lib.lua" />
 	<Script file="base.lua" />
 	<Script file="matcher.lua" />
 	<Script file="ui.lua" />
 
 	<!--@debug@-->
-	<Script file="tests/tests.lua" />
-	<Script file="tests/expect.lua" />
-	<Script file="tests/it.lua" />
-	<Script file="tests/describe.lua" />
-	<Script file="tests/beforeEach.lua" />
-	<Script file="tests/afterEach.lua" />
-	<Script file="tests/matcher.lua" />
-	<Script file="tests/runner.lua" />
-	<Script file="tests/ui.lua" />
+	<Script file="tests\tests.lua" />
+	<Script file="tests\expect.lua" />
+	<Script file="tests\it.lua" />
+	<Script file="tests\describe.lua" />
+	<Script file="tests\beforeEach.lua" />
+	<Script file="tests\afterEach.lua" />
+	<Script file="tests\matcher.lua" />
+	<Script file="tests\runner.lua" />
+	<Script file="tests\ui.lua" />
 	<!--@end-debug@-->
 
 </Ui>
