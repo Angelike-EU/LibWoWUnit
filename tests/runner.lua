@@ -128,11 +128,11 @@ function testRunWithDescribeAndNoopTests()
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 3);
     assertSame(lib.results[1].result, 'Skipped-Implicit');
-    assertSame(lib.results[1].expects, 0);
+    assertSame(lib.results[1].pendingExpect, nil);
     assertSame(lib.results[2].result, 'Risky');
-    assertSame(lib.results[2].expects, 0);
+    assertSame(lib.results[2].pendingExpect, nil);
     assertSame(lib.results[3].result, 'Skipped');
-    assertSame(lib.results[3].expects, 0);
+    assertSame(lib.results[3].pendingExpect, nil);
 end
 
 function testRunWithDescribeAndValidTests()
@@ -156,11 +156,11 @@ function testRunWithDescribeAndValidTests()
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 3);
     assertSame(lib.results[1].result, 'Skipped-Implicit');
-    assertSame(lib.results[1].expects, 0);
+    assertSame(lib.results[1].pendingExpect, nil);
     assertSame(lib.results[2].result, 'Success');
-    assertSame(lib.results[2].expects, 1);
+    assertSame(#lib.results[2].pendingExpect, 0);
     assertSame(lib.results[3].result, 'Skipped');
-    assertSame(lib.results[3].expects, 0);
+    assertSame(lib.results[3].pendingExpect, nil);
 end
 
 function testRunWithDescribeAndFailingTests()
@@ -184,11 +184,11 @@ function testRunWithDescribeAndFailingTests()
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 3);
     assertSame(lib.results[1].result, 'Skipped-Implicit');
-    assertSame(lib.results[1].expects, 0);
+    assertSame(lib.results[1].pendingExpect, nil);
     assertSame(lib.results[2].result, 'Error');
-    assertSame(lib.results[2].expects, 1);
+    assertSame(#lib.results[2].pendingExpect, 0);
     assertSame(lib.results[3].result, 'Skipped');
-    assertSame(lib.results[3].expects, 0);
+    assertSame(lib.results[3].pendingExpect, nil);
 end
 
 function testRunWithMultipleDescribeAndValidTests()
@@ -222,23 +222,23 @@ function testRunWithMultipleDescribeAndValidTests()
     assertSame(#lib.tests2run, 0);
     assertSame(#lib.results, 9);
     assertSame(lib.results[1].result, 'Skipped-Implicit');
-    assertSame(lib.results[1].expects, 0);
+    assertSame(lib.results[1].pendingExpect, nil);
     assertSame(lib.results[2].result, 'Success');
-    assertSame(lib.results[2].expects, 1);
+    assertSame(#lib.results[2].pendingExpect, 0);
     assertSame(lib.results[3].result, 'Skipped');
-    assertSame(lib.results[3].expects, 0);
+    assertSame(lib.results[3].pendingExpect, nil);
     assertSame(lib.results[4].result, 'Skipped-Implicit');
-    assertSame(lib.results[4].expects, 0);
+    assertSame(lib.results[4].pendingExpect, nil);
     assertSame(lib.results[5].result, 'Success');
-    assertSame(lib.results[5].expects, 1);
+    assertSame(#lib.results[5].pendingExpect, 0);
     assertSame(lib.results[6].result, 'Skipped');
-    assertSame(lib.results[6].expects, 0);
+    assertSame(lib.results[6].pendingExpect, nil);
     assertSame(lib.results[7].result, 'Skipped-Implicit');
-    assertSame(lib.results[7].expects, 0);
+    assertSame(lib.results[7].pendingExpect, nil);
     assertSame(lib.results[8].result, 'Skipped-Implicit');
-    assertSame(lib.results[8].expects, 0);
+    assertSame(lib.results[8].pendingExpect, nil);
     assertSame(lib.results[9].result, 'Skipped');
-    assertSame(lib.results[9].expects, 0);
+    assertSame(lib.results[9].pendingExpect, nil);
 end
 
 function testRunWithMultipleDescribeExecutionOrder()
@@ -348,3 +348,67 @@ function testRunWithMultipleDescribeExecutionOrder()
         assertSame(excecutedOrder[i], expectedOrder[i]);
     end
 end
+
+function testRunItInGlobalEnvironmentWithoutParam()
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 0);
+
+    it();
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
+    assertSame(#lib.results, 0);
+
+    runAllTests();
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 1);
+    assertSame(lib.results[1].result, 'Error');
+    assertSame(lib.results[1].pendingExpect, nil);
+    assertSame(lib.results[1].errors[1][1], 'it must have at least one callback function!');
+end
+
+function testRunItInGlobalEnvironmentWithoutExpect()
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 0);
+
+    it(noopFunc);
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
+    assertSame(#lib.results, 0);
+
+    runAllTests();
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 1);
+    assertSame(lib.results[1].result, 'Risky');
+    assertSame(lib.results[1].pendingExpect, nil);
+end
+
+function testRunItInGlobalEnvironmentWithUnresolvedExpect()
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 0);
+
+    it(function()
+        expect(true);
+    end);
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 1);
+    assertSame(#lib.results, 0);
+
+    runAllTests();
+
+    assertSame(lib.fatalErrors, nil);
+    assertSame(#lib.tests2run, 0);
+    assertSame(#lib.results, 1);
+    assertSame(lib.results[1].result, 'Risky');
+    assertSame(#lib.results[1].pendingExpect, 1);
+end
+
