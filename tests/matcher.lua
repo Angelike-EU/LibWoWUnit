@@ -275,3 +275,76 @@ function testToBeCloseToFailedByCompare()
 
     assert(lib.base.activeResult.errors[1]:match('expect input to be close to 1, but was 1.1 %(precicion 2%)') ~= nil);
 end
+
+function testToBeCloseToFailureWithToManyExpectParams()
+    lib.base.activeResult = {};
+
+    expect(1, 2).toBeCloseTo(1);
+
+    assert(lib.base.activeResult.errors[1]:match('toBeCloseTo expect only one input parameter, got 2') ~= nil);
+end
+
+function testToBeCloseToFailureWithInvalidExpectParam()
+    lib.base.activeResult = {};
+
+    expect({}).toBeCloseTo(1);
+
+    assert(lib.base.activeResult.errors[1]:match('expect input/compare to be numerics.') ~= nil);
+end
+
+function testToBeCloseToFailureWithToManyCompareParams()
+    lib.base.activeResult = {};
+
+    expect(1).toBeCloseTo(1, 2, 3);
+
+    assert(lib.base.activeResult.errors[1]:match('toBeCloseTo expect 1%-2 compare parameter, got 3') ~= nil);
+end
+
+function testToBeCloseToFailureWithInvalidCompareParam()
+    lib.base.activeResult = {};
+
+    expect(1).toBeCloseTo({});
+
+    assert(lib.base.activeResult.errors[1]:match('expect input/compare to be numerics.') ~= nil);
+end
+
+function testToBeCloseToFailureWithInvalidPrecisionParam()
+    lib.base.activeResult = {};
+
+    expect(1).toBeCloseTo(1, {});
+
+    assert(lib.base.activeResult.errors[1]:match('toBeCloseTo%(expected%[, precision%]%): precision must be an number, got table: [%dA-F]+ %(table%)') ~= nil);
+end
+
+function testToBeCloseToSuccessWithSameValues()
+    lib.base.activeResult = {};
+
+    expect(1).toBeCloseTo(1);
+
+    assertSame(lib.base.activeResult.errors, nil);
+end
+
+function testToBeCloseToSuccessWithLowerRange()
+    lib.base.activeResult = {};
+
+    expect(1).toBeCloseTo(0.991);
+
+    assertSame(lib.base.activeResult.errors, nil);
+end
+
+function testToBeCloseToSuccessWithUpperRange()
+    lib.base.activeResult = {};
+
+    expect(1).toBeCloseTo(1.0099);
+
+    assertSame(lib.base.activeResult.errors, nil);
+end
+
+function testToBeCloseToSuccessWithPrecision()
+    lib.base.activeResult = {};
+
+    expect(1).toBeCloseTo(1.0009, 3);
+
+    assertSame(lib.base.activeResult.errors, nil);
+end
+
