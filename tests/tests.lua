@@ -58,15 +58,15 @@ end
  -- returns:
     nil
 -----------------------------------------------------------------------------]]
-function saveTestResult()
+function saveTestResult(name, testOk, error)
     local resultSet = {
-        testError = _L.error,
-        testName = _L.name,
+        testError = testOk ~= true and error or nil,
+        testName = name,
         fatalErrors = lib.fatalErrors,
         runningResult = lib.base.activeResult,
-        tests2run = lib.tests2run,
+        tests2run = #lib.tests2run > 0 and lib.tests2run or nil,
         suites = lib.suites,
-        results = lib.results
+        results = #lib.results > 0 and lib.results or nil
     };
 
     if (testOk == true) then
@@ -89,23 +89,27 @@ end
 function test(name, callbackFn)
     resetResults();
 
-    local result = { pcall(callbackFn) };
+    local testOk, error = pcall(callbackFn);
 
-    _L.name = name;
-    _L.testOk = result[1] == true;
-    
-    if (_L.testOk ~= true) then 
-        print('|cffff0000Failed|r:', unpack(result));
-        _L.error = result[2];
+    if (testOk ~= true) then 
+        print('|cffff0000Failed|r:', testOk,  error);
     end
 
-    saveTestResult();
+    saveTestResult(name, testOk, error);
     resetResults();
 end
 
 function assertSame(a, b)
     if (a ~= b) then
         error(tostring(a) .. ' ~= ' .. tostring(b), 2); 
+    end
+end
+
+function assertType(obj, isType)
+    local objType = type(obj) == 'table' and obj.GetObjectType and obj.IsForbidden and obj:IsForbidden() ~= true and obj:GetObjectType() or type(obj);
+
+    if (objType ~= isType and type(obj) ~= isType) then
+        error(objType .. '/' .. type(obj) .. ' ~= ' .. tostring(isType), 2); 
     end
 end
 

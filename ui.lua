@@ -35,13 +35,13 @@ local anchorFrame, mainFrame, titleFrame, closeButton, minimizeButton, resizeBut
 --]]
 function createFrames()
     anchorFrame = lib.anchorFrame;
-    mainFrame = CreateFrame('Frame', nil, anchorFrame, 'LibWoWUnitMainFrame');
-    titleFrame = CreateFrame('Frame', nil, mainFrame, 'LibWoWUnitTitleFrame'); 
-    closeButton = CreateFrame('Button', nil, titleFrame, 'LibWoWUnitCloseButton');
-    minimizeButton = CreateFrame('Button', nil, titleFrame, 'LibWoWUnitMinimizeButton');
-    resizeButton = CreateFrame('Button', nil, mainFrame, 'LibWoWUnitResizeButton');
-    scrollFrame = CreateFrame('ScrollFrame', nil, mainFrame, 'LibWoWUnitScrollFrame');
-    resultFrame = CreateFrame('Frame', nil, scrollFrame, 'LibWoWUnitResultFrame');
+    mainFrame = mainFrame or CreateFrame('Frame', nil, anchorFrame, 'LibWoWUnitMainFrame');
+    titleFrame = titleFrame or CreateFrame('Frame', nil, mainFrame, 'LibWoWUnitTitleFrame'); 
+    closeButton = closeButton or CreateFrame('Button', nil, titleFrame, 'LibWoWUnitCloseButton');
+    minimizeButton = minimizeButton or CreateFrame('Button', nil, titleFrame, 'LibWoWUnitMinimizeButton');
+    resizeButton = resizeButton or CreateFrame('Button', nil, mainFrame, 'LibWoWUnitResizeButton');
+    scrollFrame = scrollFrame or CreateFrame('ScrollFrame', nil, mainFrame, 'LibWoWUnitScrollFrame');
+    resultFrame = resultFrame or CreateFrame('Frame', nil, scrollFrame, 'LibWoWUnitResultFrame');
 
     loadScripts(anchorFrame, AnchorFrame);
     loadScripts(mainFrame, MainFrame);

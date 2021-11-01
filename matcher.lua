@@ -239,7 +239,7 @@ function toBeCloseTo(input, expected)
     end
 
     if (#expected < 1 or #expected > 2) then
-        return false, 'toBeCloseTo expect no compare parameter, got ' .. #expected;
+        return false, 'toBeCloseTo expect 1-2 compare parameter, got ' .. #expected;
     end
 
     local precision = expected[2] or 2;
@@ -251,7 +251,7 @@ function toBeCloseTo(input, expected)
     local success, result = pcall(substract, input[1], expected[1]);
 
     if (success == false) then
-        return false, 'expect input/compare to be numerics.' .. result;
+        return false, 'expect input/compare to be numerics.';
     end
 
     if (result * math.pow(10, precision) >= 1 ) then

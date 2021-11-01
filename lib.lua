@@ -28,7 +28,7 @@ end
 local _G = _G;
 local CreateFrame = CreateFrame;
 local type = type;
-local pairs = pairs;
+local CopyTable, pairs = CopyTable, pairs;
 
 setfenv(1, lib);
 
@@ -45,6 +45,8 @@ dbDefaults = {
     ['x'] = -120,
     ['y'] = 200,
 };
+
+db = CopyTable(dbDefaults);
 
 anchorFrame = anchorFrame or CreateFrame('Frame', 'LibWoWUnit', UIParent, "LibWoWUnitAnchorFrame");
 
