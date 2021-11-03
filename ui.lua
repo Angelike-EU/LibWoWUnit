@@ -188,19 +188,44 @@ function MainFrame:OnLoad()
     self:SetShown(not lib.db.closed);
 
     self.background1 = self:CreateTexture();
+    self.background1:SetSnapToPixelGrid(true);
+    self.background1:SetDrawLayer('BACKGROUND', 1);
     self.background1:ClearAllPoints();
-    self.background1:SetAllPoints();
-    self.background1:SetColorTexture(0.16, 0.19, 0.19);
+    self.background1:SetPoint('TOPLEFT', -2, 2);
+    self.background1:SetPoint('BOTTOMRIGHT', 2, -2);
+    self.background1:SetColorTexture(0.04, 0.0425, 0.0425);
 
     self.background2 = self:CreateTexture();
+    self.background2:SetSnapToPixelGrid(true);
+    self.background2:SetDrawLayer('BACKGROUND', 2);
     self.background2:ClearAllPoints();
-    self.background2:SetAllPoints();
+    self.background2:SetPoint('TOPLEFT', -2, 2);
+    self.background2:SetPoint('BOTTOMRIGHT', 1, -1);
     self.background2:SetColorTexture(0.16, 0.19, 0.19);
 
     self.background3 = self:CreateTexture();
+    self.background3:SetSnapToPixelGrid(true);
+    self.background3:SetDrawLayer('BACKGROUND', 3);
     self.background3:ClearAllPoints();
-    self.background3:SetAllPoints();
-    self.background3:SetColorTexture(0.16, 0.19, 0.19);
+    self.background3:SetPoint('TOPLEFT', -1, 1);
+    self.background3:SetPoint('BOTTOMRIGHT', 1, -1);
+    self.background3:SetColorTexture(0.08, 0.095, 0.095);
+
+    self.background4 = self:CreateTexture();
+    self.background4:SetSnapToPixelGrid(true);
+    self.background4:SetDrawLayer('BACKGROUND', 4);
+    self.background4:ClearAllPoints();
+    self.background4:SetPoint('TOPLEFT', -1, 1);
+    self.background4:SetPoint('BOTTOMRIGHT');
+    self.background4:SetColorTexture(0.32, 0.38, 0.38);
+
+    self.background5 = self:CreateTexture();
+    self.background5:SetSnapToPixelGrid(true);
+    self.background5:SetDrawLayer('BACKGROUND', 5);
+    self.background5:ClearAllPoints();
+    self.background5:SetPoint('TOPLEFT');
+    self.background5:SetPoint('BOTTOMRIGHT');
+    self.background5:SetColorTexture(0.16, 0.19, 0.19);
 
     self:updateFrame();
 end

@@ -260,3 +260,56 @@ function toBeCloseTo(input, expected)
 
 	return true;
 end
+
+
+function toBeGreaterThan()
+    error('NYI', 3);
+end
+
+function toBeGreaterThanOrEqual()
+    error('NYI', 3);
+end
+
+function toBeLessThan()
+    error('NYI', 3);
+end
+
+function toBeLessThanOrEqual()
+    error('NYI', 3);
+end
+
+function toBeNull()
+    error('NYI', 3);
+end
+
+function toContain()
+    error('NYI', 3);
+end
+
+function toEqual()
+    error('NYI', 3);
+end
+
+function toHaveBeenCalled()
+    error('NYI', 3);
+end
+
+function toHaveBeenCalledBefore()
+    error('NYI', 3);
+end
+
+function toHaveBeenCalledTimes()
+    error('NYI', 3);
+end
+
+function toHaveBeenCalledWith()
+    error('NYI', 3);
+end
+
+function toMatch()
+    error('NYI', 3);
+end
+
+function toThrow()
+    error('NYI', 3);
+end
