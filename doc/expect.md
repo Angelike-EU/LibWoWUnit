@@ -67,7 +67,7 @@ This matcher ceck's if an value is equal or close to an other value. The gap can
     expect(1.0099).toToBeCloseTo(1, 2); -- ok
 
 ### toBeDefined
-In ths matcher will be checkt, if an input is be defined (means not null). The compare function has no paramter.
+In this matcher will be checkt, if an input is be defined (means not null). The compare function has no paramter.
 
 **Syntax:**
 
@@ -82,7 +82,34 @@ In ths matcher will be checkt, if an input is be defined (means not null). The c
     expect(nil).notToBeDefined(); -- ok
 
 ### toBeFalsy
+Checks that the input value is falsy. Please note that in Lua only false and nil are falsy (Empty string '' and 0 are truthy values). 
+
+**Syntax:**
+
+    expect(input).toBeFalsy();
+    expect(input).notToBeFalsy();
+
+**Examples:**
+
+    expect(false).toBeFalsy(); -- ok
+    expect(1).notToBeFalsy(); --ok
+    expect(0).toBeFalsy(); -- fail
+    expect(42).notToBeFalsy(); -- ok
+
 ### toBeFalse
+Checks that the input value is false.
+
+**Syntax:**
+
+    expect(input).toBeFalse();
+    expect(input).notToBeFalse();
+
+**Examples:**
+
+    expect(false).toBeFalsy(); -- ok
+    expect(1).notToBeFalsy(); --ok
+    expect(0).toBeFalsy(); -- fail
+    expect(42).notToBeFalsy(); -- ok
 ### toBeGreaterThan
 NYI
 ### toBeGreaterThanOrEqual
@@ -94,8 +121,52 @@ NYI
 ### toBeNil
 NYI
 ### toBeTrue
+This matcher checks a value to be true.
+
+**Syntax:**
+
+    expect(input).toBeTrue();
+    expect(input).notToBeTrue();
+
+**Examples:**
+
+    expect(true).toBeTrue(); -- ok
+    expect('true').notToBeTrue(); --ok
+    expect(false).toBeTrue(); -- fail
+
+
 ### toBeTruthy
+This matcher checks a value is truthy. Please note, that every value is truthy exept false or nil.
+
+**Syntax:**
+
+    expect(input).toBeTruthy();
+    expect(input).notToBeTruthy();
+
+**Examples:**
+
+    expect(true).toBeTruthy(); -- ok
+    expect(false).notToBeTruthy(); --ok
+    expect(false).toBeTruthy(); -- fail
+    expect(nil).notToBeTruthy(); -- ok
+
 ### toBeType
+Check's an input of an type representance. Valid are the default lua types and also the UI Object types.
+
+**Syntax:**
+
+    expect(input).toBeType(expectedType);
+    expect(input).notToBeType(expectedType);
+
+**Examples:**
+
+    expect(true).toBeType('boolean'); -- ok
+    expect(false).notToBeType('Frame'); --ok
+    expect(false).toBeType('Button'); -- fail
+    expect(nil).notToBeType('nil'); -- ok
+    expect(UIParent).toBeType('Frame'); -- ok
+    expect(UIParent).toBeType('table'); -- also ok
+
 ### toContain
 NYI
 ### toEqual
