@@ -26,7 +26,7 @@ The matcher functions are a main component of LibWoWUnit. There are build in mat
 #### toBe or notToBe
 (Hamlet, William Shakespeare)
 
-In Jasmine we can use the **.not.** chain to negate an expectation, which is in Lua not possible, because the keyword not is a reseved word in luy syntax.
+In Jasmine we can use the **.not.** chain to negate an expectation, which is in Lua not possible, because the keyword not is a reseved word in lua syntax.
 
     expect(true).toBe(true); -- is ok
     expect(true).not.toBe(false); -- raise an runtime error
@@ -50,3 +50,136 @@ The simplest matcher is the toBe matcher. It compares directly two values by ref
     expect('foo').notToBe('bar'); --ok
     expect(UIParent).toBe(WorldFrame); -- fail
     expect({}).notToBe({}); -- ok
+
+### toBeCloseTo
+This matcher ceck's if an value is equal or close to an other value. The gap can pe set by a second compare parameter. It describes the precision after the comma.
+
+**Syntax:**
+
+    expect(input).toBeCloseTo(expectedResult[, precision = 2]);
+    expect(input).toToBeCloseTo(expectedResult[, precision = 2]);
+
+**Examples:**
+
+    expect(1).toBeCloseTo(1); -- ok
+    expect(1).toToBeCloseTo(2); --ok
+    expect(1.01).toBeCloseTo(1, 2); -- fail
+    expect(1.0099).toToBeCloseTo(1, 2); -- ok
+
+### toBeDefined
+In this matcher will be checkt, if an input is be defined (means not null). The compare function has no paramter.
+
+**Syntax:**
+
+    expect(input).toBeDefined();
+    expect(input).notToBeDefined();
+
+**Examples:**
+
+    expect(1).toBeDefined(); -- ok
+    expect(nil).notToBeDefined(); --ok
+    expect(nil).toBeDefined(); -- fail
+    expect(nil).notToBeDefined(); -- ok
+
+### toBeFalsy
+Checks that the input value is falsy. Please note that in Lua only false and nil are falsy (Empty string '' and 0 are truthy values). 
+
+**Syntax:**
+
+    expect(input).toBeFalsy();
+    expect(input).notToBeFalsy();
+
+**Examples:**
+
+    expect(false).toBeFalsy(); -- ok
+    expect(1).notToBeFalsy(); --ok
+    expect(0).toBeFalsy(); -- fail
+    expect(42).notToBeFalsy(); -- ok
+
+### toBeFalse
+Checks that the input value is false.
+
+**Syntax:**
+
+    expect(input).toBeFalse();
+    expect(input).notToBeFalse();
+
+**Examples:**
+
+    expect(false).toBeFalsy(); -- ok
+    expect(1).notToBeFalsy(); --ok
+    expect(0).toBeFalsy(); -- fail
+    expect(42).notToBeFalsy(); -- ok
+### toBeGreaterThan
+NYI
+### toBeGreaterThanOrEqual
+NYI
+### toBeLessThan
+NYI
+### toBeLessThanOrEqual
+NYI
+### toBeNil
+NYI
+### toBeTrue
+This matcher checks a value to be true.
+
+**Syntax:**
+
+    expect(input).toBeTrue();
+    expect(input).notToBeTrue();
+
+**Examples:**
+
+    expect(true).toBeTrue(); -- ok
+    expect('true').notToBeTrue(); --ok
+    expect(false).toBeTrue(); -- fail
+
+
+### toBeTruthy
+This matcher checks a value is truthy. Please note, that every value is truthy exept false or nil.
+
+**Syntax:**
+
+    expect(input).toBeTruthy();
+    expect(input).notToBeTruthy();
+
+**Examples:**
+
+    expect(true).toBeTruthy(); -- ok
+    expect(false).notToBeTruthy(); --ok
+    expect(false).toBeTruthy(); -- fail
+    expect(nil).notToBeTruthy(); -- ok
+
+### toBeType
+Check's an input of an type representance. Valid are the default lua types and also the UI Object types.
+
+**Syntax:**
+
+    expect(input).toBeType(expectedType);
+    expect(input).notToBeType(expectedType);
+
+**Examples:**
+
+    expect(true).toBeType('boolean'); -- ok
+    expect(false).notToBeType('Frame'); --ok
+    expect(false).toBeType('Button'); -- fail
+    expect(nil).notToBeType('nil'); -- ok
+    expect(UIParent).toBeType('Frame'); -- ok
+    expect(UIParent).toBeType('table'); -- also ok
+
+### toContain
+NYI
+### toEqual
+NYI
+### toHaveBeenCalled
+NYI
+### toHaveBeenCalledBefore
+NYI
+### toHaveBeenCalledTimes
+NYI
+### toHaveBeenCalledWith
+NYI
+### toMatch
+NYI
+### toThrow
+NYI

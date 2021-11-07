@@ -16,7 +16,7 @@ ToDO:
  - spies
  - stacktraces
  - more info in output window
- - syling
+ - styling
  - doc's
  
 
